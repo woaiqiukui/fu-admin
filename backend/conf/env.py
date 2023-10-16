@@ -4,22 +4,22 @@
 # 数据库类型 MYSQL/SQLSERVER/SQLITE3
 DATABASE_TYPE = "MYSQL"
 # 数据库地址
-DATABASE_HOST = "127.0.0.1"
+DATABASE_HOST = "107.172.97.23"
 # 数据库端口
-DATABASE_PORT = 3306
+DATABASE_PORT = 3127
 # 数据库用户名
 DATABASE_USER = "root"
 # 数据库密码
-DATABASE_PASSWORD = ""
+DATABASE_PASSWORD = "*XE!ccccw<;cS2qs"
 # 数据库名
-DATABASE_NAME = "fuadmin"
+DATABASE_NAME = "yunying"
 
 # ================================================= #
 # ************** redis配置，无redis 可不进行配置  ************** #
 # ================================================= #
-REDIS_PASSWORD = ''
-REDIS_HOST = '127.0.0.1'
-REDIS_URL = f'redis://:{REDIS_PASSWORD or ""}@{REDIS_HOST}:6379'
+REDIS_PASSWORD = 'f1G!19dfd'
+REDIS_HOST = '107.172.97.23'
+REDIS_URL = f'redis://:{REDIS_PASSWORD or ""}@{REDIS_HOST}:18363'
 # ================================================= #
 # ************** 其他 配置  ************** #
 # ================================================= #
