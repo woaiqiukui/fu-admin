@@ -69,7 +69,7 @@ export default {
     confirmPasswordMsg: '两次输入的密码不一致!',
     changeAvatarText: '更换头像',
     resetPassword: '重置密码',
-    resetPasswordHit: '是否重置密码为123456'
+    resetPasswordHit: '是否重置密码为123456',
   },
   button: {
     nameText: '按钮名称',
@@ -220,5 +220,13 @@ export default {
     periodText: '周期',
     secondText: '秒',
     dayText: '天',
+  },
+  project: {
+    projectNameText: '项目名称',
+    projectDescText: '项目描述',
+    createDateText: '开始日期',
+    projectStatusText: '项目状态',
+    project_status_1: '进行中',
+    project_status_2: '已完成',
   },
 };

@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'system',
     'demo',
     'generator',
+    'task',
 ]
 
 MIDDLEWARE = [
