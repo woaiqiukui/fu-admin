@@ -1,6 +1,6 @@
 import { defHttp } from '/@/utils/http/axios';
 
-enum DeptApi {
+enum ProjApi {
   prefix = '/api/task/project',
 }
 
@@ -8,7 +8,7 @@ enum DeptApi {
  * 获取list
  */
 export const getList = (params) => {
-  return defHttp.get({ url: DeptApi.prefix, params });
+  return defHttp.get({ url: ProjApi.prefix, params });
 };
 
 /**
@@ -16,9 +16,9 @@ export const getList = (params) => {
  */
 export const createOrUpdate = (params, isUpdate) => {
   if (isUpdate) {
-    return defHttp.put({ url: DeptApi.prefix + '/' + params.id, params });
+    return defHttp.put({ url: ProjApi.prefix + '/' + params.id, params });
   } else {
-    return defHttp.post({ url: DeptApi.prefix, params });
+    return defHttp.post({ url: ProjApi.prefix, params });
   }
 };
 
@@ -26,12 +26,12 @@ export const createOrUpdate = (params, isUpdate) => {
  * 删除
  */
 export const deleteItem = (id) => {
-  return defHttp.delete({ url: DeptApi.prefix + '/' + id });
+  return defHttp.delete({ url: ProjApi.prefix + '/' + id });
 };
 
 /**
  * 获取项目详情
  */
 export const getDetail = (id) => {
-  return defHttp.get({ url: DeptApi.prefix + '/' + id });
+  return defHttp.get({ url: ProjApi.prefix + '/' + id });
 };

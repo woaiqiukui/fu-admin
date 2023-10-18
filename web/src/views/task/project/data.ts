@@ -54,8 +54,8 @@ export const searchFormSchema: FormSchema[] = [
     component: 'Select',
     componentProps: {
       options: [
-        { label: t('common.project.project_status_1'), value: true },
-        { label: t('common.project.project_status_2'), value: false },
+        { label: t('common.project.project_status_1'), value: false },
+        { label: t('common.project.project_status_2'), value: true },
       ],
     },
     colProps: { span: 8 },
@@ -68,20 +68,6 @@ export const formSchema: FormSchema[] = [
     label: 'id',
     component: 'Input',
     show: false,
-  },
-
-  {
-    field: 'parent_id',
-    label: t('common.dept.parentText'),
-    component: 'TreeSelect',
-    componentProps: {
-      fieldNames: {
-        label: 'name',
-        key: 'id',
-        value: 'id',
-      },
-      getPopupContainer: () => document.body,
-    },
   },
 
   {

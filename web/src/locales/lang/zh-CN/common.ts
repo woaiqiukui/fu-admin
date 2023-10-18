@@ -229,4 +229,14 @@ export default {
     project_status_1: '进行中',
     project_status_2: '已完成',
   },
+  public_assets: {
+    taskNameText: '任务名',
+    assetsText: '目标资产',
+    taskStatusText: '任务状态',
+    taskStatusText_1: '进行中',
+    taskStatusText_2: '已完成',
+    taskStatusText_3: '已中止',
+    createTimeText: '开始时间',
+    updateTimeText: '结束时间',
+  },
 };
