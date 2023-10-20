@@ -14,8 +14,12 @@ export const getList = (params) => {
 /**
  * 添加任务
  */
-export const addTask = (params) => {
-  return defHttp.post({ url: PublicAssetsApi.prefix, params });
+export const createOrUpdate = (params, isUpdate) => {
+  if (isUpdate) {
+    return defHttp.put({ url: PublicAssetsApi.prefix + '/' + params.id, params });
+  } else {
+    return defHttp.post({ url: PublicAssetsApi.prefix, params });
+  }
 };
 
 /**
