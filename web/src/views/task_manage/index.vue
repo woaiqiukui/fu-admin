@@ -1,7 +1,9 @@
 <template>
   <div class="public-assets-stepform">
     <a-steps :current="current">
-      <a-step title:"填写任务信息"/> <a-step title:"填写任务详情"/> <a-step title:"完成"/>
+      <a-step title="填写任务信息" />
+      <a-step title="填写任务详情" />
+      <a-step title="完成" />
     </a-steps>
   </div>
   <div class="mt-5">
@@ -13,19 +15,19 @@
 <script lang="ts">
   import { defineComponent, ref, reactive, toRefs } from 'vue';
   import Step1 from './Step1.vue';
-  import Step2 from './Step2.vue';
-  import Step3 from './Step3.vue';
-  import { getList as getProjectList } from '../project/api.ts';
-  import { Step, Steps } from 'ant-design-vue';
+  // import Step2 from './Step2.vue';
+  // import Step3 from './Step3.vue';
+  import { getList as getProjectList } from '../project/api';
+  import { Steps } from 'ant-design-vue';
 
   export default defineComponent({
-    name: 'PublicAssets',
+    name: 'TaskManagment',
     components: {
       Step1,
-      Step2,
-      Step3,
+      // Step2,
+      // Step3,
       [Steps.name]: Steps,
-      [Step.Step.name]: Step.Step,
+      [Steps.Step.name]: Steps.Step,
     },
     setup() {
       const current = ref(0);
@@ -37,7 +39,8 @@
       });
 
       getProjectList().then((res) => {
-        projectList.value = res.data;
+        console.log(res);
+        projectList.value = res.data.items.map((project) => project.project_name);
       });
 
       function handleStep1Next(step1Values: any) {

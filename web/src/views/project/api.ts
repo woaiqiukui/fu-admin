@@ -1,7 +1,7 @@
 import { defHttp } from '/@/utils/http/axios';
 
 enum ProjApi {
-  prefix = '/api/project',
+  prefix = '/api/project/',
 }
 
 /**

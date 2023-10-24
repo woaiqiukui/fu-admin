@@ -1,7 +1,7 @@
 import { defHttp } from '/@/utils/http/axios';
 
 enum PublicAssetsApi {
-  prefix = '/api/task',
+  prefix = '/api/task/',
 }
 
 /**

@@ -1,10 +1,11 @@
 from typing import List
 from ninja import Router, ModelSchema, Query, Field
 from ninja.pagination import paginate
-
-from task.models import Project
 from utils.fu_crud import create, delete, update, retrieve, ImportSchema, export_data, import_data
 from utils.fu_ninja import FuFilters, MyPagination
+
+from .models import Project
+
 
 router = Router()
 
@@ -29,26 +30,26 @@ class ProjectSchemaOut(ModelSchema):
         model_fields = "__all__"
 
 # 创建Project
-@router.post("/project", response=ProjectSchemaOut)
+@router.post("/", response=ProjectSchemaOut)
 def create_demo(request, data: ProjectSchemaIn):
     project = create(request, data, Project)
     return project
 
 # 删除Project
-@router.delete("/project/{project_id}")
+@router.delete("/{project_id}")
 def delete_demo(request, project_id: int):
     delete(project_id, Project)
     return {"success": True}
 
 
 # 更新Project
-@router.put("/project/{project_id}", response=ProjectSchemaOut)
+@router.put("/{project_id}", response=ProjectSchemaOut)
 def update_demo(request, project_id: int, data: ProjectSchemaIn):
     project = update(request, project_id, data, Project)
     return project
 
 # 获取Project List
-@router.get("/project", response=List[ProjectSchemaOut])
+@router.get("/", response=List[ProjectSchemaOut])
 @paginate(MyPagination)
 def get_demo_list(request, filters: Filters = Query(...)):
     return retrieve(request, Project, filters)

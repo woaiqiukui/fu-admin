@@ -42,7 +42,9 @@ INSTALLED_APPS = [
     'system',
     'demo',
     'generator',
+    'project',
     'task',
+    'assets',
 ]
 
 MIDDLEWARE = [

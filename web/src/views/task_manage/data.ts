@@ -3,6 +3,16 @@ import { FormSchema } from '/@/components/Form';
 
 export const step1Schemas: FormSchema[] = [
   {
+    field: 'task_name',
+    component: 'Input',
+    label: '任务名称',
+    required: true,
+    defaultValue: 'test',
+    colProps: {
+      span: 24,
+    },
+  },
+  {
     field: 'project',
     component: 'Select',
     label: '关联项目',
@@ -16,11 +26,11 @@ export const step1Schemas: FormSchema[] = [
     },
   },
   {
-    field: 'task_name',
-    component: 'Input',
-    label: '任务名称',
-    required: true,
-    defaultValue: 'test',
+    field: 'task_desc',
+    component: 'InputTextArea',
+    label: '任务描述',
+    required: false,
+    defaultValue: '项目目的及用途描述',
     colProps: {
       span: 24,
     },
@@ -40,6 +50,28 @@ export const step1Schemas: FormSchema[] = [
         {
           label: '内网资产扫描',
           value: '2',
+        },
+      ],
+    },
+  },
+  {
+    field: 'task_status',
+    component: 'Select',
+    label: '任务状态',
+    required: true,
+    defaultValue: '1',
+    componentProps: {
+      options: [
+        {
+          label: '进行中',
+          value: '1',
+        },
+        {
+          label: '已终止',
+          value: '2',
+        },
+        {
+          label: '已完成',
         },
       ],
     },
