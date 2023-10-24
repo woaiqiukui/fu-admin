@@ -1,18 +1,18 @@
 import { defHttp } from '/@/utils/http/axios';
 
 enum ProjApi {
-  prefix = '/api/task/project',
+  prefix = '/api/project',
 }
 
 /**
- * 获取list
+ * 获取项目list
  */
-export const getList = (params) => {
-  return defHttp.get({ url: ProjApi.prefix, params });
+export const getList = () => {
+  return defHttp.get({ url: ProjApi.prefix });
 };
 
 /**
- * 保存或更新
+ * 保存或更新项目
  */
 export const createOrUpdate = (params, isUpdate) => {
   if (isUpdate) {
@@ -23,7 +23,7 @@ export const createOrUpdate = (params, isUpdate) => {
 };
 
 /**
- * 删除
+ * 删除特定项目
  */
 export const deleteItem = (id) => {
   return defHttp.delete({ url: ProjApi.prefix + '/' + id });

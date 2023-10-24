@@ -1,11 +1,11 @@
 import { defHttp } from '/@/utils/http/axios';
 
 enum PublicAssetsApi {
-  prefix = '/api/task/public_assets',
+  prefix = '/api/task',
 }
 
 /**
- * 获取list
+ * 获取任务list
  */
 export const getList = (params) => {
   return defHttp.get({ url: PublicAssetsApi.prefix, params });
