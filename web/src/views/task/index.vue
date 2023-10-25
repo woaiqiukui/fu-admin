@@ -17,7 +17,6 @@
   import Step1 from './Step1.vue';
   // import Step2 from './Step2.vue';
   // import Step3 from './Step3.vue';
-  import { getList as getProjectList } from '../project/api';
   import { Steps } from 'ant-design-vue';
 
   export default defineComponent({
@@ -36,11 +35,6 @@
       const state = reactive({
         initSetp2: false,
         initSetp3: false,
-      });
-
-      getProjectList().then((res) => {
-        console.log(res);
-        projectList.value = res.data.items.map((project) => project.project_name);
       });
 
       function handleStep1Next(step1Values: any) {

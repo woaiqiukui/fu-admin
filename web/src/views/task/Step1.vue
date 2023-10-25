@@ -1,40 +1,29 @@
 <template>
   <div class="step1">
     <div class="step1-form">
-      <BasicForm @register="register">
-        <template #fac="{ model, field }">
-          <a-input-group compact>
-            <a-select v-model="model[TaskType]" class="TaskType-select">
-              <a-select-option value="1">公网资产监控</a-select-option>
-              <a-select-option value="2">内网资产扫描</a-select-option>
-            </a-select>
-          </a-input-group>
-        </template>
-      </BasicForm>
+      <BasicForm @register="register" />
     </div>
-    <a-driver />
+    <a-divider />
   </div>
 </template>
 <script lang="ts">
-    import { defineComponent } from 'vue';
+  import { defineComponent, ref, unref } from 'vue';
   import { BasicForm, useForm } from '/@/components/Form';
   import { step1Schemas } from './data';
-
-  import { Select, Input, Divider } from 'ant-design-vue';
-  import { custom } from 'vue-types';
+  import { getList as getProjectList } from '../project/api';
+  import { Divider } from 'ant-design-vue';
+  import { useModalInner } from '/@/components/Modal';
 
   export default defineComponent({
     components: {
       BasicForm,
-      [Select.name]: Select,
-      ASelectOption: Select.Option,
-      [Input.name]: Input,
-      [Input.Group.name]: Input.Group,
       [Divider.name]: Divider,
     },
     emits: ['next'],
     setup(_, { emit }) {
-      const [register, { validate }] = useForm({
+      const isUpdate = ref(true);
+
+      const [register, { resetFields, setFieldsValue, updateSchema, validate }] = useForm({
         labelWidth: 100,
         schemas: step1Schemas,
         actionColOptions: {
@@ -45,6 +34,29 @@
           text: '下一步',
         },
         submitFunc: customSubmitFunc,
+      });
+
+      const [registerModal, { setModalProps }] = useModalInner(async (data) => {
+        resetFields();
+        setModalProps({ confirmLoading: false });
+        isUpdate.value = !!data?.isUpdate;
+
+        if (unref(isUpdate)) {
+          setFieldsValue({
+            ...data.record,
+          });
+        }
+        // 获取项目列表并更新下拉框选项
+        const projectList = await getProjectList();
+        console.log(projectList);
+        const projectOptions = projectList.items.map((project) => ({
+          label: project.project_name,
+          value: project.id,
+        }));
+        updateSchema({
+          field: 'project',
+          componentProps: { options: projectOptions },
+        });
       });
 
       async function customSubmitFunc() {
@@ -58,6 +70,8 @@
 
       return {
         register,
+        registerModal,
+        customSubmitFunc,
       };
     },
   });

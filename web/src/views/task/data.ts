@@ -18,9 +18,9 @@ export const step1Schemas: FormSchema[] = [
     label: '关联项目',
     required: true,
     defaultValue: '1',
-    componentProps: {
-      options: ref([]), // 使用 ref 创建响应式引用
-    },
+    // componentProps: {
+    //   options: ref([]), // 使用 ref 创建响应式引用
+    // },
     colProps: {
       span: 24,
     },
