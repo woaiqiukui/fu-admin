@@ -1,4 +1,3 @@
-import { ref } from 'vue';
 import { FormSchema } from '/@/components/Form';
 
 export const step1Schemas: FormSchema[] = [

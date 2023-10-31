@@ -30,7 +30,6 @@
     },
     setup() {
       const current = ref(0);
-      const projectList = ref([]);
 
       const state = reactive({
         initSetp2: false,
@@ -61,7 +60,6 @@
 
       return {
         current,
-        projectList,
         handleStep1Next,
         handleStep2Next,
         handleRedo,

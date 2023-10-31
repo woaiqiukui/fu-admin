@@ -1,10 +1,7 @@
 <template>
-  <div class="step1">
-    <div class="step1-form">
-      <BasicForm @register="register" />
-    </div>
-    <a-divider />
-  </div>
+  <BasicModal v-bind="$attrs" @register="registerModal">
+    <BasicForm @register="registerForm" />
+  </BasicModal>
 </template>
 <script lang="ts">
   import { defineComponent, ref, unref } from 'vue';
@@ -12,10 +9,12 @@
   import { step1Schemas } from './data';
   import { getList as getProjectList } from '../project/api';
   import { Divider } from 'ant-design-vue';
-  import { useModalInner } from '/@/components/Modal';
+  import { BasicModal, useModalInner } from '/@/components/Modal';
 
   export default defineComponent({
+    name: 'Step1',
     components: {
+      BasicModal,
       BasicForm,
       [Divider.name]: Divider,
     },
@@ -23,17 +22,11 @@
     setup(_, { emit }) {
       const isUpdate = ref(true);
 
-      const [register, { resetFields, setFieldsValue, updateSchema, validate }] = useForm({
+      const [registerForm, { resetFields, setFieldsValue, updateSchema, validate }] = useForm({
         labelWidth: 100,
+        baseColProps: { span: 24 },
         schemas: step1Schemas,
-        actionColOptions: {
-          span: 14,
-        },
-        showResetButton: false,
-        submitButtonOptions: {
-          text: '下一步',
-        },
-        submitFunc: customSubmitFunc,
+        showActionButtonGroup: false,
       });
 
       const [registerModal, { setModalProps }] = useModalInner(async (data) => {
@@ -46,16 +39,10 @@
             ...data.record,
           });
         }
-        // 获取项目列表并更新下拉框选项
-        const projectList = await getProjectList();
-        console.log(projectList);
-        const projectOptions = projectList.items.map((project) => ({
-          label: project.project_name,
-          value: project.id,
-        }));
+        const projectData = await getProjectList();
         updateSchema({
           field: 'project',
-          componentProps: { options: projectOptions },
+          componentProps: { projectData },
         });
       });
 
@@ -69,8 +56,8 @@
       }
 
       return {
-        register,
         registerModal,
+        registerForm,
         customSubmitFunc,
       };
     },
