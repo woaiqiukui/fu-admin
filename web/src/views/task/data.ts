@@ -1,4 +1,8 @@
+import { ref } from 'vue';
 import { FormSchema } from '/@/components/Form';
+import { getList as getProjectList } from '../project/api';
+
+const projectOptions = ref([]);
 
 export const step1Schemas: FormSchema[] = [
   {
@@ -16,12 +20,25 @@ export const step1Schemas: FormSchema[] = [
     component: 'Select',
     label: '关联项目',
     required: true,
-    defaultValue: '1',
-    // componentProps: {
-    //   options: ref([]), // 使用 ref 创建响应式引用
-    // },
+    defaultValue: '选择关联的项目',
+    componentProps: {
+      options: projectOptions,
+    },
     colProps: {
       span: 24,
+    },
+  },
+  {
+    field: 'project_id',
+    component: 'Input',
+    label: '',
+    required: true,
+    defaultValue: '',
+    colProps: {
+      span: 0,
+    },
+    componentProps: {
+      style: { display: 'none' }, // 使用 style 属性将字段隐藏
     },
   },
   {
@@ -76,3 +93,33 @@ export const step1Schemas: FormSchema[] = [
     },
   },
 ];
+
+export const publicSchemas: FormSchema[] = [
+  {
+    field: 'task_target',
+    component: 'Input',
+    label: '任务目标',
+    required: true,
+    defaultValue: 1,
+  },
+];
+
+export const privateSchemas: FormSchema[] = [
+  {
+    field: 'task_target',
+    component: 'Input',
+    label: '任务目标',
+    required: true,
+    defaultValue: 1,
+  },
+];
+
+export async function getProjectOptions() {
+  const response = await getProjectList();
+  projectOptions.value = response.items.map((item) => ({
+    label: `${item.project_name} --- ${item.project_desc} --- ${
+      item.project_status ? '进行中' : '已完成'
+    }`,
+    value: item.id,
+  }));
+}

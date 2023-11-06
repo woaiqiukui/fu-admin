@@ -1,30 +1,39 @@
 <template>
-  <div class="public-assets-stepform">
-    <a-steps :current="current">
-      <a-step title="填写任务信息" />
-      <a-step title="填写任务详情" />
-      <a-step title="完成" />
-    </a-steps>
-  </div>
-  <div class="mt-5">
-    <Step1 @next="handleStep1Next" v-show="current === 0" />
-    <Step2 @prev="handleStepPrev" @next="handleStep2Next" v-show="current === 1" v-if="initSetp2" />
-    <Step3 v-show="current === 2" @redo="handleRedo" v-if="initSetp3" />
-  </div>
+  <PageWrapper title="" contentBackground content="" contentClass="p-4">
+    <div class="public-assets-stepform">
+      <a-steps :current="current">
+        <a-step title="填写任务信息" />
+        <a-step title="填写任务详情" />
+        <a-step title="完成" />
+      </a-steps>
+    </div>
+    <div class="mt-5">
+      <Step1 @next="handleStep1Next" v-show="current === 0" />
+      <Step2
+        @prev="handleStepPrev"
+        @next="handleStep2Next"
+        v-show="current === 1"
+        v-if="initSetp2"
+      />
+      <Step3 v-show="current === 2" @redo="handleRedo" v-if="initSetp3" />
+    </div>
+  </PageWrapper>
 </template>
 <script lang="ts">
   import { defineComponent, ref, reactive, toRefs } from 'vue';
   import Step1 from './Step1.vue';
-  // import Step2 from './Step2.vue';
-  // import Step3 from './Step3.vue';
+  import Step2 from './Step2.vue';
+  import Step3 from './Step3.vue';
+  import { PageWrapper } from '/@/components/Page';
   import { Steps } from 'ant-design-vue';
 
   export default defineComponent({
     name: 'TaskManagment',
     components: {
       Step1,
-      // Step2,
-      // Step3,
+      Step2,
+      Step3,
+      PageWrapper,
       [Steps.name]: Steps,
       [Steps.Step.name]: Steps.Step,
     },

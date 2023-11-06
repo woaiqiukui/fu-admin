@@ -1,49 +1,36 @@
 <template>
-  <BasicModal v-bind="$attrs" @register="registerModal">
-    <BasicForm @register="registerForm" />
-  </BasicModal>
+  <BasicForm @register="registerForm" />
+  <a-divider />
 </template>
 <script lang="ts">
-  import { defineComponent, ref, unref } from 'vue';
+  import { defineComponent, onMounted } from 'vue';
   import { BasicForm, useForm } from '/@/components/Form';
-  import { step1Schemas } from './data';
-  import { getList as getProjectList } from '../project/api';
+  import { step1Schemas, getProjectOptions } from './data';
   import { Divider } from 'ant-design-vue';
-  import { BasicModal, useModalInner } from '/@/components/Modal';
 
   export default defineComponent({
     name: 'Step1',
     components: {
-      BasicModal,
       BasicForm,
       [Divider.name]: Divider,
     },
     emits: ['next'],
     setup(_, { emit }) {
-      const isUpdate = ref(true);
-
-      const [registerForm, { resetFields, setFieldsValue, updateSchema, validate }] = useForm({
-        labelWidth: 100,
-        baseColProps: { span: 24 },
-        schemas: step1Schemas,
-        showActionButtonGroup: false,
+      onMounted(async () => {
+        await getProjectOptions();
       });
 
-      const [registerModal, { setModalProps }] = useModalInner(async (data) => {
-        resetFields();
-        setModalProps({ confirmLoading: false });
-        isUpdate.value = !!data?.isUpdate;
-
-        if (unref(isUpdate)) {
-          setFieldsValue({
-            ...data.record,
-          });
-        }
-        const projectData = await getProjectList();
-        updateSchema({
-          field: 'project',
-          componentProps: { projectData },
-        });
+      const [registerForm, { validate }] = useForm({
+        labelWidth: 100,
+        schemas: step1Schemas,
+        actionColOptions: {
+          span: 14,
+        },
+        showResetButton: false,
+        submitButtonOptions: {
+          text: '下一步',
+        },
+        submitFunc: customSubmitFunc,
       });
 
       async function customSubmitFunc() {
@@ -56,9 +43,7 @@
       }
 
       return {
-        registerModal,
         registerForm,
-        customSubmitFunc,
       };
     },
   });
