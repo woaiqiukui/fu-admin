@@ -2,7 +2,7 @@ import { ref } from 'vue';
 import { FormSchema } from '/@/components/Form';
 import { getList as getProjectList } from '../project/api';
 
-const projectOptions = ref([]);
+export const projectOptions = ref([]);
 
 export const step1Schemas: FormSchema[] = [
   {
@@ -26,19 +26,6 @@ export const step1Schemas: FormSchema[] = [
     },
     colProps: {
       span: 24,
-    },
-  },
-  {
-    field: 'project_id',
-    component: 'Input',
-    label: '',
-    required: true,
-    defaultValue: '',
-    colProps: {
-      span: 0,
-    },
-    componentProps: {
-      style: { display: 'none' }, // 使用 style 属性将字段隐藏
     },
   },
   {
@@ -121,5 +108,7 @@ export async function getProjectOptions() {
       item.project_status ? '进行中' : '已完成'
     }`,
     value: item.id,
+    disabled: !item.project_status,
+    project_id: item.project_id,
   }));
 }

@@ -1,6 +1,11 @@
 <template>
-  <BasicForm @register="registerForm" />
-  <a-divider />
+  <div class="step1">
+    <div class="step1-form">
+      <BasicForm @register="register" />
+      <a-button type="primary" @click="customSubmitFunc">下一步</a-button>
+    </div>
+    <a-divider />
+  </div>
 </template>
 <script lang="ts">
   import { defineComponent, onMounted } from 'vue';
@@ -9,7 +14,6 @@
   import { Divider } from 'ant-design-vue';
 
   export default defineComponent({
-    name: 'Step1',
     components: {
       BasicForm,
       [Divider.name]: Divider,
@@ -20,7 +24,7 @@
         await getProjectOptions();
       });
 
-      const [registerForm, { validate }] = useForm({
+      const [register, { validate }] = useForm({
         labelWidth: 100,
         schemas: step1Schemas,
         actionColOptions: {
@@ -38,12 +42,13 @@
           const values = await validate();
           emit('next', values);
         } catch (error) {
-          // console.log(error);
+          console.log(error);
         }
       }
 
       return {
-        registerForm,
+        register,
+        customSubmitFunc,
       };
     },
   });
@@ -72,13 +77,5 @@
     p {
       color: @text-color;
     }
-  }
-
-  .pay-select {
-    width: 20%;
-  }
-
-  .pay-input {
-    width: 70%;
   }
 </style>

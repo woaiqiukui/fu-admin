@@ -1,6 +1,6 @@
 <template>
   <PageWrapper title="" contentBackground content="" contentClass="p-4">
-    <div class="public-assets-stepform">
+    <div class="step-form-form">
       <a-steps :current="current">
         <a-step title="填写任务信息" />
         <a-step title="填写任务详情" />
@@ -14,6 +14,7 @@
         @next="handleStep2Next"
         v-show="current === 1"
         v-if="initSetp2"
+        :step1Values="state.step1Values"
       />
       <Step3 v-show="current === 2" @redo="handleRedo" v-if="initSetp3" />
     </div>
@@ -43,15 +44,19 @@
       const state = reactive({
         initSetp2: false,
         initSetp3: false,
+        //保存 step1 的值
+        step1Values: {},
       });
 
       function handleStep1Next(step1Values: any) {
         current.value++;
         state.initSetp2 = true;
         console.log(step1Values);
+        state.step1Values = step1Values;
       }
 
       function handleStepPrev() {
+        state.initSetp2 = false;
         current.value--;
       }
 
@@ -69,6 +74,7 @@
 
       return {
         current,
+        state,
         handleStep1Next,
         handleStep2Next,
         handleRedo,
