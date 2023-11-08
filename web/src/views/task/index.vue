@@ -16,7 +16,13 @@
         v-if="initSetp2"
         :step1Values="state.step1Values"
       />
-      <Step3 v-show="current === 2" @redo="handleRedo" v-if="initSetp3" />
+      <Step3
+        v-show="current === 2"
+        @redo="handleRedo"
+        v-if="initSetp3"
+        :step1Values="state.step1Values"
+        :step2Values="state.step2Values"
+      />
     </div>
   </PageWrapper>
 </template>
@@ -46,6 +52,7 @@
         initSetp3: false,
         //保存 step1 的值
         step1Values: {},
+        step2Values: {},
       });
 
       function handleStep1Next(step1Values: any) {
@@ -64,6 +71,8 @@
         current.value++;
         state.initSetp3 = true;
         console.log(step2Values);
+        state.step2Values = step2Values;
+        console.log(state.step1Values, state.step2Values);
       }
 
       function handleRedo() {

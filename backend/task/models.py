@@ -8,4 +8,3 @@ class Task(models.Model):
     task_desc = models.CharField(max_length=128, verbose_name="任务描述")
     task_type = models.CharField(max_length=128, verbose_name="任务类型")
     task_status = models.CharField(max_length=128, verbose_name="任务状态")
-

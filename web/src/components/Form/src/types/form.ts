@@ -14,6 +14,9 @@ export type Rule = RuleObject & {
 };
 
 export interface RenderCallbackParams {
+  full_company_name: boolean;
+  root_domain: boolean;
+  ip: boolean;
   schema: FormSchema;
   values: Recordable;
   model: Recordable;

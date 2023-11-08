@@ -18,10 +18,11 @@
   </div>
 </template>
 <script lang="ts">
-  import { defineComponent, onMounted, ref } from 'vue';
+  import { defineComponent } from 'vue';
   import { BasicForm, useForm } from '/@/components/Form';
   import { Alert, Divider, Descriptions } from 'ant-design-vue';
-  import { publicSchemas, privateSchemas, projectOptions } from './data';
+  import { publicSchemas, privateSchemas } from './data';
+  import { createOrUpdate } from './api';
 
   export default defineComponent({
     components: {
@@ -47,10 +48,6 @@
         schemasValue = privateSchemas;
       }
 
-      // const projectSelect = projectOptions[1].value.project_id;
-
-      console.log(projectOptions);
-
       const [registerForm, { validate, setProps }] = useForm({
         labelWidth: 80,
         schemas: schemasValue,
@@ -67,10 +64,6 @@
         submitFunc: customSubmitFunc,
       });
 
-      async function getProjectInfo() {
-        console.log('getProjectOptions');
-      }
-
       async function customResetFunc() {
         emit('prev');
       }
@@ -78,6 +71,15 @@
       async function customSubmitFunc() {
         try {
           const values = await validate();
+
+          const taskValues = {
+            ...stepValue,
+            ...values,
+          };
+          console.log('here');
+          console.log(taskValues);
+          await createOrUpdate(taskValues, false);
+
           setProps({
             submitButtonOptions: {
               loading: true,
@@ -105,7 +107,7 @@
 </script>
 <style lang="less" scoped>
   .step2 {
-    width: 450px;
+    width: 500px;
     margin: 0 auto;
   }
 </style>

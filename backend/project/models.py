@@ -7,7 +7,7 @@ class Project(CoreModel):
     project_status = models.BooleanField(verbose_name="项目状态", help_text="项目状态")
 
     class Meta:
-        db_table = "task_project"
+        db_table = "project"
         verbose_name = "项目信息"
         verbose_name_plural = verbose_name
         ordering = ('-create_datetime',)

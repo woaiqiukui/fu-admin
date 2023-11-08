@@ -1,17 +1,27 @@
 <template>
   <div class="step3">
-    <a-result status="success" title="操作成功" sub-title="预计两小时内到账">
+    <a-result status="success" title="任务创建成功">
       <template #extra>
-        <a-button type="primary" @click="redo"> 再转一笔 </a-button>
-        <a-button> 查看账单 </a-button>
+        <a-button type="primary" @click="redo"> 创建新任务 </a-button>
+        <a-button> 查看任务详情 </a-button>
       </template>
     </a-result>
     <div class="desc-wrap">
       <a-descriptions :column="1" class="mt-5">
-        <a-descriptions-item label="付款账户"> ant-design@alipay.com </a-descriptions-item>
-        <a-descriptions-item label="收款账户"> test@example.com </a-descriptions-item>
-        <a-descriptions-item label="收款人姓名"> Vben </a-descriptions-item>
-        <a-descriptions-item label="转账金额"> 500元 </a-descriptions-item>
+        <a-descriptions-item label="项目名称"> {{ stepValue1.task_name }} </a-descriptions-item>
+        <a-descriptions-item label="任务名称"> {{ stepValue1.task_name }} </a-descriptions-item>
+        <a-descriptions-item label="任务描述"> {{ stepValue1.task_desc }} </a-descriptions-item>
+        <a-descriptions-item label="任务目标" style="white-space: pre-wrap">
+          {{
+            (stepValue2.full_company_name_input
+              ? '公司全称：\n' + stepValue2.full_company_name_input + '\n'
+              : '') +
+            (stepValue2.root_domain_input
+              ? '根域名列表：\n' + stepValue2.root_domain_input + '\n'
+              : '') +
+            (stepValue2.ip_input ? 'IP 列表：\n' + stepValue2.ip_input : '')
+          }}
+        </a-descriptions-item>
       </a-descriptions>
     </div>
   </div>
@@ -26,12 +36,29 @@
       [Descriptions.name]: Descriptions,
       [Descriptions.Item.name]: Descriptions.Item,
     },
+    props: {
+      step1Values: {
+        type: Object,
+        required: true,
+      },
+      step2Values: {
+        type: Object,
+        required: true,
+      },
+    },
     emits: ['redo'],
-    setup(_, { emit }) {
+    setup(props, { emit }) {
+      // eslint-disable-next-line vue/no-setup-props-destructure
+      const stepValue1 = props.step1Values;
+      // eslint-disable-next-line vue/no-setup-props-destructure
+      const stepValue2 = props.step2Values;
+
       return {
         redo: () => {
           emit('redo');
         },
+        stepValue1,
+        stepValue2,
       };
     },
   });
