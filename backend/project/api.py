@@ -1,7 +1,8 @@
 from typing import List
+import uuid
 from ninja import Router, ModelSchema, Query, Field
 from ninja.pagination import paginate
-from utils.fu_crud import create, delete, update, retrieve, ImportSchema, export_data, import_data
+from utils.yunying_crud import create, delete, update, retrieve, ImportSchema, export_data, import_data
 from utils.fu_ninja import FuFilters, MyPagination
 
 from .models import Project
@@ -37,14 +38,14 @@ def create_demo(request, data: ProjectSchemaIn):
 
 # 删除Project
 @router.delete("/{project_id}")
-def delete_demo(request, project_id: int):
+def delete_demo(request, project_id: uuid.UUID):
     delete(project_id, Project)
     return {"success": True}
 
 
 # 更新Project
 @router.put("/{project_id}", response=ProjectSchemaOut)
-def update_demo(request, project_id: int, data: ProjectSchemaIn):
+def update_demo(request, project_id: uuid.UUID, data: ProjectSchemaIn):
     project = update(request, project_id, data, Project)
     return project
 

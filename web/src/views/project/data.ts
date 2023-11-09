@@ -64,8 +64,8 @@ export const searchFormSchema: FormSchema[] = [
 
 export const formSchema: FormSchema[] = [
   {
-    field: 'id',
-    label: 'id',
+    field: 'uuid',
+    label: 'uuid',
     component: 'Input',
     show: false,
   },

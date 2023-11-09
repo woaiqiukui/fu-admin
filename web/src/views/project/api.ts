@@ -16,7 +16,8 @@ export const getList = () => {
  */
 export const createOrUpdate = (params, isUpdate) => {
   if (isUpdate) {
-    return defHttp.put({ url: ProjApi.prefix + '/' + params.id, params });
+    console.log(params);
+    return defHttp.put({ url: ProjApi.prefix + '/' + params.uuid, params });
   } else {
     return defHttp.post({ url: ProjApi.prefix, params });
   }
@@ -25,13 +26,13 @@ export const createOrUpdate = (params, isUpdate) => {
 /**
  * 删除特定项目
  */
-export const deleteItem = (id) => {
-  return defHttp.delete({ url: ProjApi.prefix + '/' + id });
+export const deleteItem = (uuid) => {
+  return defHttp.delete({ url: ProjApi.prefix + '/' + uuid });
 };
 
 /**
  * 获取项目详情
  */
-export const getDetail = (id) => {
-  return defHttp.get({ url: ProjApi.prefix + '/' + id });
+export const getDetail = (uuid) => {
+  return defHttp.get({ url: ProjApi.prefix + '/' + uuid });
 };

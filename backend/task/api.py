@@ -1,7 +1,8 @@
 from typing import List
+import uuid
 from ninja import Router, ModelSchema, Query, Field
 from ninja.pagination import paginate
-from utils.fu_crud import create, delete, update, retrieve, ImportSchema, export_data, import_data
+from utils.yunying_crud import create, delete, update, retrieve, ImportSchema, export_data, import_data
 from utils.fu_ninja import FuFilters, MyPagination
 
 from .models import Task
@@ -13,7 +14,7 @@ class Filters(FuFilters):
     name: str = Field(None, alias="task_name")
     desc: str = Field(None, alias="task_desc")
     type: int = Field(None, alias="task_type")
-    id: str = Field(None, alias="task_id")
+    task_uuid: str = Field(None, alias="task_uuid")
     status: str = Field(None, alias="task_status")
 
 # 设置请求接收字段
@@ -36,15 +37,15 @@ def create_demo(request, data: TaskSchemaIn):
     return task
 
 # 删除Task
-@router.delete("/{task_id}")
-def delete_demo(request, task_id: int):
-    delete(task_id, Task)
+@router.delete("/{task_uuid}")
+def delete_demo(request, task_uuid: uuid.UUID):
+    delete(task_uuid, Task)
     return {"success": True}
 
 # 更新Task
-@router.put("/{task_id}", response=TaskSchemaOut)
-def update_demo(request, task_id: int, data: TaskSchemaIn):
-    task = update(request, task_id, data, Task)
+@router.put("/{task_uuid}", response=TaskSchemaOut)
+def update_demo(request, task_uuid: uuid.UUID, data: TaskSchemaIn):
+    task = update(request, task_uuid, data, Task)
     return task
 
 # 获取Task List
