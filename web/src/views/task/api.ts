@@ -18,6 +18,7 @@ export const createOrUpdate = (params, isUpdate) => {
   if (isUpdate) {
     return defHttp.put({ url: PublicAssetsApi.prefix + '/' + params.id, params });
   } else {
+    console.log(params);
     return defHttp.post({ url: PublicAssetsApi.prefix, params });
   }
 };

@@ -22,7 +22,16 @@ const defaultPortMap = new Map([
   ['custom', ''],
 ]);
 
-let defaultPorts = ref('');
+let defaultPorts = defaultPortMap.get('custom');
+
+const portScanningOptions = [
+  { label: '全端口', value: 'all' },
+  { label: '常见web端口', value: 'web' },
+  { label: '常见数据库端口', value: 'database' },
+  { label: '常用top100端口', value: 'top100' },
+  { label: '常用top1000端口', value: 'top1000' },
+  { label: '自定义端口', value: 'custom' },
+];
 
 export const step1Schemas: FormSchema[] = [
   {
@@ -39,7 +48,7 @@ export const step1Schemas: FormSchema[] = [
     },
   },
   {
-    field: 'project',
+    field: 'project_uuid_id',
     component: 'Select',
     label: '关联项目',
     required: true,
@@ -161,13 +170,36 @@ export const publicSchemas: FormSchema[] = [
   },
   {
     field: 'port_scanning',
-    component: 'Checkbox',
+    component: 'Select',
     label: '端口扫描',
-    defaultValue: false,
-    labelWidth: 100,
     componentProps: {
-      style: 'width: 50px;',
+      options: portScanningOptions,
+      onChange: handlePortChange,
     },
+    defaultValue: 'all',
+  },
+  {
+    field: 'default_ports_input',
+    component: 'InputTextArea',
+    label: '端口列表',
+    componentProps: {
+      placeholder: defaultPorts,
+      style: 'height: 100px; width: 400px;',
+    },
+    helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
+    ifShow: ({ values }) => values.port_scanning !== 'custom',
+  },
+  {
+    field: 'custom_ports_input',
+    component: 'InputTextArea',
+    label: '端口列表',
+    helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
+    componentProps: {
+      placeholder: '请输入端口',
+      style: 'height: 100px; width: 400px;',
+    },
+    defaultValue: '1-65535',
+    ifShow: ({ values }) => values.port_scanning === 'custom',
   },
   {
     field: 'framework_identification',
@@ -221,20 +253,12 @@ export const publicSchemas: FormSchema[] = [
   },
 ];
 
-const portScanningOptions = [
-  { label: '全端口', value: 'all' },
-  { label: '常见web端口', value: 'web' },
-  { label: '常见数据库端口', value: 'database' },
-  { label: '常用top100端口', value: 'top100' },
-  { label: '常用top1000端口', value: 'top1000' },
-  { label: '自定义端口', value: 'custom' },
-];
-
 export const privateSchemas: FormSchema[] = [
   {
     field: 'ip_input',
     component: 'InputTextArea',
     label: 'IP',
+    required: true,
     helpMessage:
       '请输入IP，可以不填\nIP格式为：xxx.xxx.xxx.xxx，或者 xxx.xxx.xxx.xxx/16，或者 xxx.xxx.xxx.1-xxx.xxx.xxx.20\n换行符隔开',
     componentProps: {
@@ -250,18 +274,30 @@ export const privateSchemas: FormSchema[] = [
       options: portScanningOptions,
       onChange: handlePortChange,
     },
-    defaultValue: 'all',
+    defaultValue: 'custom',
   },
   {
-    field: 'ports_input',
+    field: 'default_ports_input',
+    component: 'InputTextArea',
+    label: '端口列表',
+    componentProps: {
+      placeholder: defaultPorts,
+      style: 'height: 100px; width: 400px;',
+    },
+    helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
+    ifShow: ({ values }) => values.port_scanning !== 'custom',
+  },
+  {
+    field: 'custom_ports_input',
     component: 'InputTextArea',
     label: '端口列表',
     helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
-    defaultValue: defaultPorts,
     componentProps: {
       placeholder: '请输入端口',
       style: 'height: 100px; width: 400px;',
     },
+    defaultValue: '1-65535',
+    ifShow: ({ values }) => values.port_scanning === 'custom',
   },
   {
     field: 'service_identification',
@@ -291,7 +327,6 @@ export const privateSchemas: FormSchema[] = [
 
 export async function getProjectOptions() {
   const response = await getProjectList();
-  console.log(response);
   projectOptions.value = response.items.map((item) => ({
     label: `${item.project_name} --- ${item.project_desc} --- ${
       item.project_status ? '进行中' : '已完成'
@@ -301,7 +336,16 @@ export async function getProjectOptions() {
   }));
 }
 
-function handlePortChange(value) {
-  defaultPorts = defaultPortMap.get(value);
-  console.log(defaultPorts);
+async function handlePortChange(value) {
+  const schema = privateSchemas.find((item) => item.field === 'default_ports_input');
+  if (schema) {
+    schema.defaultValue = defaultPortMap.get(value);
+    if (schema.componentProps) {
+      schema.componentProps.placeholder = defaultPortMap.get(value);
+    }
+    defaultPorts = defaultPortMap.get(value);
+    console.log(schema);
+  } else {
+    console.log('没有找到 field 为 "custom_ports_input" 的元素');
+  }
 }

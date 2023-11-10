@@ -64,3 +64,6 @@ class FuFilters(Schema):
     creator_id: int = Field(None, alias="creator_id")
     belong_dept: int = Field(None, alias="belong_dept")
     belong_dept__in: List[int] = Field(None, alias="belong_dept__in")
+
+class YunYingFilters(Schema):
+    creator_id: int = Field(None, alias="creator_id")

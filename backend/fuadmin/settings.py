@@ -44,7 +44,6 @@ INSTALLED_APPS = [
     'generator',
     'project',
     'task',
-    'assets',
 ]
 
 MIDDLEWARE = [

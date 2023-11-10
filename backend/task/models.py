@@ -15,7 +15,6 @@ class Task(yunyingModel):
     ip_input = models.CharField(default="", max_length=128, verbose_name="IP地址")
     domain_brute_force = models.BooleanField(default=False, verbose_name="域名暴力破解")
     historical_domain_query = models.BooleanField(default=False, verbose_name="历史域名查询")
-    port_scanning = models.BooleanField(default=False, verbose_name="端口扫描")
     framework_identification = models.BooleanField(default=False, verbose_name="框架识别")
     fingerprint_identification = models.BooleanField(default=False, verbose_name="指纹识别")
     fofa = models.BooleanField(default=False, verbose_name="fofa")
@@ -24,8 +23,9 @@ class Task(yunyingModel):
 
     # 内网资产扫描
     ip_input = models.CharField(default="", max_length=128, verbose_name="IP地址")
-    port_scanning = models.BooleanField(default=True, verbose_name="端口扫描")
-    ports_input = models.CharField(default="", max_length=128, verbose_name="端口列表")
+    port_scanning = models.CharField(default="", max_length=128, verbose_name="端口扫描类型")
+    default_ports_input = models.CharField(default="", max_length=128, verbose_name="默认端口列表")
+    custom_ports_input = models.CharField(default="", max_length=128, verbose_name="自定义端口列表")
     service_identification = models.BooleanField(default=False, verbose_name="服务识别")
     fingerprint_identification = models.BooleanField(default=False, verbose_name="指纹识别")
     weak_password_detection = models.BooleanField(default=False, verbose_name="弱口令探测")

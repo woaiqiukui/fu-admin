@@ -7,7 +7,6 @@
       show-icon
     />
     <a-descriptions :column="1" class="mt-5">
-      <a-descriptions-item label="项目名称"> {{ stepValue.task_name }} </a-descriptions-item>
       <a-descriptions-item label="任务名称"> {{ stepValue.task_name }} </a-descriptions-item>
       <a-descriptions-item label="任务描述"> {{ stepValue.task_desc }} </a-descriptions-item>
     </a-descriptions>
@@ -76,7 +75,6 @@
             ...stepValue,
             ...values,
           };
-          console.log('here');
           console.log(taskValues);
           await createOrUpdate(taskValues, false);
 

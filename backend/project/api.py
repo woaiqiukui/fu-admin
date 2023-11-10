@@ -3,7 +3,7 @@ import uuid
 from ninja import Router, ModelSchema, Query, Field
 from ninja.pagination import paginate
 from utils.yunying_crud import create, delete, update, retrieve, ImportSchema, export_data, import_data
-from utils.fu_ninja import FuFilters, MyPagination
+from utils.fu_ninja import YunYingFilters, MyPagination
 
 from .models import Project
 
@@ -11,7 +11,7 @@ from .models import Project
 router = Router()
 
 # 设置过滤字段
-class Filters(FuFilters):
+class Filters(YunYingFilters):
     name: str = Field(None, alias="project_name")
     desc: str = Field(None, alias="project_desc")
     status: int = Field(None, alias="project_status")

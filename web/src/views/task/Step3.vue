@@ -8,7 +8,6 @@
     </a-result>
     <div class="desc-wrap">
       <a-descriptions :column="1" class="mt-5">
-        <a-descriptions-item label="项目名称"> {{ stepValue1.task_name }} </a-descriptions-item>
         <a-descriptions-item label="任务名称"> {{ stepValue1.task_name }} </a-descriptions-item>
         <a-descriptions-item label="任务描述"> {{ stepValue1.task_desc }} </a-descriptions-item>
         <a-descriptions-item label="任务目标" style="white-space: pre-wrap">
