@@ -1,0 +1,127 @@
+<template>
+  <a-table :columns="columns" :data-source="data" :row-selection="rowSelection" bordered />
+</template>
+<script lang="ts">
+  import { defineComponent } from 'vue';
+  import { Table } from 'ant-design-vue';
+
+  const columns = [
+    {
+      title: 'IP',
+      dataIndex: 'name',
+      key: 'name',
+    },
+    {
+      title: '端口',
+      dataIndex: 'age',
+      key: 'age',
+      width: '32%',
+    },
+    {
+      title: 'Tag',
+      dataIndex: 'address',
+      width: '30%',
+      key: 'address',
+    },
+  ];
+
+  interface DataItem {
+    key: number;
+    name: string;
+    age: number;
+    address: string;
+    children?: DataItem[];
+  }
+
+  const data: DataItem[] = [
+    {
+      key: 1,
+      name: 'John Brown sr.',
+      age: 60,
+      address: 'New York No. 1 Lake Park',
+      children: [
+        {
+          key: 11,
+          name: 'John Brown',
+          age: 42,
+          address: 'New York No. 2 Lake Park',
+        },
+        {
+          key: 12,
+          name: 'John Brown jr.',
+          age: 30,
+          address: 'New York No. 3 Lake Park',
+          children: [
+            {
+              key: 121,
+              name: 'Jimmy Brown',
+              age: 16,
+              address: 'New York No. 3 Lake Park',
+            },
+          ],
+        },
+        {
+          key: 13,
+          name: 'Jim Green sr.',
+          age: 72,
+          address: 'London No. 1 Lake Park',
+          children: [
+            {
+              key: 131,
+              name: 'Jim Green',
+              age: 42,
+              address: 'London No. 2 Lake Park',
+              children: [
+                {
+                  key: 1311,
+                  name: 'Jim Green jr.',
+                  age: 25,
+                  address: 'London No. 3 Lake Park',
+                },
+                {
+                  key: 1312,
+                  name: 'Jimmy Green sr.',
+                  age: 18,
+                  address: 'London No. 4 Lake Park',
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+    {
+      key: 2,
+      name: 'Joe Black',
+      age: 32,
+      address: 'Sidney No. 1 Lake Park',
+    },
+  ];
+
+  const rowSelection = {
+    onChange: (selectedRowKeys: (string | number)[], selectedRows: DataItem[]) => {
+      console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
+    },
+    onSelect: (record: DataItem, selected: boolean, selectedRows: DataItem[]) => {
+      console.log(record, selected, selectedRows);
+    },
+    onSelectAll: (selected: boolean, selectedRows: DataItem[], changeRows: DataItem[]) => {
+      console.log(selected, selectedRows, changeRows);
+    },
+  };
+
+  export default defineComponent({
+    name: 'PortPage',
+    components: {
+      [Table.name]: Table,
+      [Table.Column.name]: Table.Column,
+    },
+    setup() {
+      return {
+        data,
+        columns,
+        rowSelection,
+      };
+    },
+  });
+</script>
