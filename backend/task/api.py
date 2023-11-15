@@ -5,6 +5,7 @@ from ninja.pagination import paginate
 from project.models import Project
 from utils.yunying_crud import create, delete, update, retrieve, ImportSchema, export_data, import_data
 from utils.fu_ninja import YunYingFilters, MyPagination
+from .celery.portScan import portScan
 
 from .models import Task
 
@@ -56,6 +57,8 @@ def create_demo(request, data: TaskSchemaIn):
     project = Project.objects.get(uuid=data.project_uuid)
     data.project_uuid = project
     task = create(request, data, Task)
+    portScan.delay()
+    print(task)
     return task
 
 # 删除Task

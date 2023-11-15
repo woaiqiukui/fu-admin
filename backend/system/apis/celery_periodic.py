@@ -91,6 +91,7 @@ def immediate_exec_task(request, data: SchemaExecIn):
 from {'.'.join(task_name.split('.')[:-1])} import {task_name.split('.')[-1]}
 task = {task_name.split('.')[-1]}.delay()
             """
+    
     exec(test)
 
     return FuResponse()

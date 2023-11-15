@@ -268,12 +268,12 @@ LOGGING = {
 
 # celery 配置
 CELERY_BROKER_URL = f'{REDIS_URL}/2'
+CELERY_RESULT_BACKEND = f'{REDIS_URL}/3'  # celery结果存储到数据库中
 DJANGO_CELERY_BEAT_TZ_AWARE = False
 CELERY_ENABLE_UTC = False
 CELERY_WORKER_CONCURRENCY = 2  # 并发数
 CELERY_MAX_TASKS_PER_CHILD = 5  # 没个worker最多执行5个任务便自我销毁释放内存
 CELERY_TIMEZONE = TIME_ZONE  # celery 时区问题
-CELERY_RESULT_BACKEND = 'django-db'  # celery结果存储到数据库中
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'  # Backend数据库
 
 # token 有效时间 时 分 秒
