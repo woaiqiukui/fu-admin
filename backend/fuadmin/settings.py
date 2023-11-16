@@ -276,6 +276,7 @@ CELERY_MAX_TASKS_PER_CHILD = 5  # 没个worker最多执行5个任务便自我销
 CELERY_TIMEZONE = TIME_ZONE  # celery 时区问题
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'  # Backend数据库
 
+
 # token 有效时间 时 分 秒
 TOKEN_LIFETIME = 12 * 60 * 60
 # TOKEN_LIFETIME = 50

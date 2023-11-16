@@ -118,7 +118,7 @@ export const step1Schemas: FormSchema[] = [
 
 export const publicSchemas: FormSchema[] = [
   {
-    field: 'full_company_name_input',
+    field: 'public_full_company_name_input',
     component: 'Input',
     label: '公司全称',
     helpMessage: '请输入完整的公司全称，用于获取备案信息',
@@ -128,7 +128,7 @@ export const publicSchemas: FormSchema[] = [
     },
   },
   {
-    field: 'root_domain_input',
+    field: 'public_root_domain_input',
     component: 'InputTextArea',
     label: '根域名',
     helpMessage: '请输入根域名，可以不填\n根域名格式为：xxx.com，或者 xxx.gov.cn\n换行符隔开',
@@ -138,7 +138,7 @@ export const publicSchemas: FormSchema[] = [
     },
   },
   {
-    field: 'ip_input',
+    field: 'public_ip_input',
     component: 'InputTextArea',
     label: 'IP',
     helpMessage:
@@ -149,7 +149,7 @@ export const publicSchemas: FormSchema[] = [
     },
   },
   {
-    field: 'domain_brute_force',
+    field: 'public_domain_brute_force',
     component: 'Checkbox',
     label: '域名爆破',
     defaultValue: false,
@@ -159,7 +159,7 @@ export const publicSchemas: FormSchema[] = [
     },
   },
   {
-    field: 'historical_domain_query',
+    field: 'public_historical_domain_query',
     component: 'Checkbox',
     label: '历史域名查询',
     defaultValue: false,
@@ -169,7 +169,7 @@ export const publicSchemas: FormSchema[] = [
     },
   },
   {
-    field: 'port_scanning',
+    field: 'public_port_scanning',
     component: 'Select',
     label: '端口扫描',
     componentProps: {
@@ -179,7 +179,7 @@ export const publicSchemas: FormSchema[] = [
     defaultValue: 'all',
   },
   {
-    field: 'default_ports_input',
+    field: 'public_default_ports_input',
     component: 'InputTextArea',
     label: '端口列表',
     componentProps: {
@@ -187,10 +187,10 @@ export const publicSchemas: FormSchema[] = [
       style: 'height: 100px; width: 400px;',
     },
     helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
-    ifShow: ({ values }) => values.port_scanning !== 'custom',
+    ifShow: ({ values }) => values.public_port_scanning !== 'custom',
   },
   {
-    field: 'custom_ports_input',
+    field: 'public_custom_ports_input',
     component: 'InputTextArea',
     label: '端口列表',
     helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
@@ -199,20 +199,10 @@ export const publicSchemas: FormSchema[] = [
       style: 'height: 100px; width: 400px;',
     },
     defaultValue: '1-65535',
-    ifShow: ({ values }) => values.port_scanning === 'custom',
+    ifShow: ({ values }) => values.public_port_scanning === 'custom',
   },
   {
-    field: 'framework_identification',
-    component: 'Checkbox',
-    label: '框架识别',
-    defaultValue: false,
-    labelWidth: 100,
-    componentProps: {
-      style: 'width: 50px;',
-    },
-  },
-  {
-    field: 'fingerprint_identification',
+    field: 'public_fingerprint_identification',
     component: 'Checkbox',
     label: '指纹识别',
     defaultValue: false,
@@ -222,7 +212,7 @@ export const publicSchemas: FormSchema[] = [
     },
   },
   {
-    field: 'fofa',
+    field: 'public_fofa',
     component: 'Checkbox',
     label: 'FOFA',
     defaultValue: true,
@@ -232,7 +222,7 @@ export const publicSchemas: FormSchema[] = [
     },
   },
   {
-    field: 'hunter',
+    field: 'public_hunter',
     component: 'Checkbox',
     label: 'Hunter',
     defaultValue: false,
@@ -242,7 +232,7 @@ export const publicSchemas: FormSchema[] = [
     },
   },
   {
-    field: 'quake',
+    field: 'public_quake',
     component: 'Checkbox',
     label: 'Quake',
     defaultValue: true,
@@ -255,7 +245,7 @@ export const publicSchemas: FormSchema[] = [
 
 export const privateSchemas: FormSchema[] = [
   {
-    field: 'ip_input',
+    field: 'private_ip_input',
     component: 'InputTextArea',
     label: 'IP',
     required: true,
@@ -267,7 +257,7 @@ export const privateSchemas: FormSchema[] = [
     },
   },
   {
-    field: 'port_scanning',
+    field: 'private_port_scanning',
     component: 'Select',
     label: '端口扫描',
     componentProps: {
@@ -277,7 +267,7 @@ export const privateSchemas: FormSchema[] = [
     defaultValue: 'custom',
   },
   {
-    field: 'default_ports_input',
+    field: 'private_default_ports_input',
     component: 'InputTextArea',
     label: '端口列表',
     componentProps: {
@@ -285,10 +275,10 @@ export const privateSchemas: FormSchema[] = [
       style: 'height: 100px; width: 400px;',
     },
     helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
-    ifShow: ({ values }) => values.port_scanning !== 'custom',
+    ifShow: ({ values }) => values.private_port_scanning !== 'custom',
   },
   {
-    field: 'custom_ports_input',
+    field: 'private_custom_ports_input',
     component: 'InputTextArea',
     label: '端口列表',
     helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
@@ -297,28 +287,22 @@ export const privateSchemas: FormSchema[] = [
       style: 'height: 100px; width: 400px;',
     },
     defaultValue: '1-65535',
-    ifShow: ({ values }) => values.port_scanning === 'custom',
+    ifShow: ({ values }) => values.private_port_scanning === 'custom',
   },
   {
-    field: 'service_identification',
-    component: 'Checkbox',
-    label: '服务识别',
-    defaultValue: false,
-  },
-  {
-    field: 'fingerprint_identification',
+    field: 'private_fingerprint_identification',
     component: 'Checkbox',
     label: '指纹识别',
     defaultValue: false,
   },
   {
-    field: 'weak_password_detection',
+    field: 'private_weak_password_detection',
     component: 'Checkbox',
     label: '弱口令探测',
     defaultValue: false,
   },
   {
-    field: 'poc_scanning',
+    field: 'private_poc_scanning',
     component: 'Checkbox',
     label: 'POC 扫描',
     defaultValue: false,
@@ -337,7 +321,7 @@ export async function getProjectOptions() {
 }
 
 async function handlePortChange(value) {
-  const schema = privateSchemas.find((item) => item.field === 'default_ports_input');
+  const schema = privateSchemas.find((item) => item.field === 'private_default_ports_input');
   if (schema) {
     schema.defaultValue = defaultPortMap.get(value);
     if (schema.componentProps) {
@@ -346,6 +330,6 @@ async function handlePortChange(value) {
     defaultPorts = defaultPortMap.get(value);
     console.log(schema);
   } else {
-    console.log('没有找到 field 为 "custom_ports_input" 的元素');
+    console.log('没有找到 field 为 "private_default_ports_input" 的元素');
   }
 }

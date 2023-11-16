@@ -13,6 +13,21 @@ from django.db import models
 
 from fuadmin import settings
 
+class resultModel(models.Model):
+    """
+    用于存储脚本运行结果
+    """
+    uuid = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="UUID", help_text="UUID")
+    update_datetime = models.DateTimeField(auto_now=True, null=True, blank=True, help_text="修改时间", verbose_name="修改时间")
+    create_datetime = models.DateTimeField(auto_now_add=True, null=True, blank=True, help_text="创建时间",
+                                             verbose_name="创建时间")
+    sort = models.IntegerField(default=1, null=True, blank=True, verbose_name="显示排序", help_text="显示排序")
+
+    class Meta:
+        abstract = True
+        verbose_name = '运行结果模型'
+        verbose_name_plural = verbose_name
+
 class yunyingModel(models.Model):
     """
     运营平台所用的抽象模型

@@ -1,7 +1,7 @@
 import { defHttp } from '/@/utils/http/axios';
 
 enum PrivateTaskApi {
-  prefix = '/api/private_task/',
+  prefix = '/api/task/private_task/',
 }
 
 /**
