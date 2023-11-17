@@ -1,106 +1,212 @@
 <template>
-  <PageWrapper title="" contentBackground content="" contentClass="p-4">
-    <div class="step-form-form">
-      <a-steps :current="current">
-        <a-step title="填写任务信息" />
-        <a-step title="填写任务详情" />
-        <a-step title="完成" />
-      </a-steps>
-    </div>
-    <div class="mt-5">
-      <Step1 @next="handleStep1Next" v-show="current === 0" />
-      <Step2
-        @prev="handleStepPrev"
-        @next="handleStep2Next"
-        v-show="current === 1"
-        v-if="initSetp2"
-        :step1Values="state.step1Values"
-      />
-      <Step3
-        v-show="current === 2"
-        @redo="handleRedo"
-        v-if="initSetp3"
-        :step1Values="state.step1Values"
-        :step2Values="state.step2Values"
-      />
-    </div>
-  </PageWrapper>
+  <div>
+    <BasicTable @register="registerTable" @fetch-success="onFetchSuccess">
+      <template #tableTitle>
+        <Space style="height: 40px">
+          <a-button
+            type="error"
+            v-auth="['post:delete']"
+            preIcon="ant-design:delete-outlined"
+            @click="handleBulkDelete"
+          >
+            {{ t('common.delText') }}
+          </a-button>
+        </Space>
+      </template>
+      <template #toolbar>
+        <a-button type="primary" @click="expandAll">{{ t('common.expandText') }}</a-button>
+        <a-button type="primary" @click="collapseAll">{{ t('common.collapseText') }}</a-button>
+      </template>
+      <template #bodyCell="{ column, record }">
+        <template v-if="column.key === 'action'">
+          <TableAction
+            :actions="[
+              {
+                type: 'button',
+                color: 'link',
+                auth: ['dept:update'],
+                icon: 'ant-design:eye-outlined',
+                placement: 'left',
+                onClick: handleDetail.bind(null, record.uuid),
+                tooltip: {
+                  title: '查看详情',
+                  placement: 'left',
+                },
+              },
+              {
+                type: 'button',
+                color: 'primary',
+                auth: ['dept:update'],
+                icon: 'ant-design:pause-outlined',
+                disabled: record.task_status === '2',
+                onClick: handlePause.bind(null, record.uuid),
+                tooltip: {
+                  title: '暂停任务',
+                  placement: 'left',
+                },
+              },
+              {
+                type: 'button',
+                color: 'dashed',
+                auth: ['dept:update'],
+                icon: 'ant-design:play-circle-outlined',
+                disabled: record.task_status === '1',
+                onClick: handleResume.bind(null, record.uuid),
+                tooltip: {
+                  title: '恢复任务',
+                  placement: 'left',
+                },
+              },
+              {
+                type: 'button',
+                color: 'primary',
+                auth: ['dept:update'],
+                icon: 'clarity:note-edit-line',
+                onClick: handleEdit.bind(null, record.uuid),
+              },
+              {
+                type: 'button',
+                color: 'error',
+                auth: ['dept:delete'],
+                icon: 'ant-design:delete-outlined',
+                placement: 'left',
+                popConfirm: {
+                  title: t('common.delHintText'),
+                  confirm: handleDelete.bind(null, record.uuid),
+                },
+              },
+            ]"
+          />
+        </template>
+      </template>
+    </BasicTable>
+    <TaskDrawer @register="registerDrawer" @success="handleSuccess" />
+  </div>
 </template>
 <script lang="ts">
-  import { defineComponent, ref, reactive, toRefs } from 'vue';
-  import Step1 from './Step1.vue';
-  import Step2 from './Step2.vue';
-  import Step3 from './Step3.vue';
-  import { PageWrapper } from '/@/components/Page';
-  import { Steps } from 'ant-design-vue';
+  import { defineComponent, nextTick } from 'vue';
+
+  import { BasicTable, useTable, TableAction } from '/@/components/Table';
+
+  import { useDrawer } from '/@/components/Drawer';
+  import TaskDrawer from './drawer.vue';
+  import { columns, searchFormSchema } from './data';
+  import { getList, deleteItem, pauseItem, resumeItem } from './api';
+  import { message, Space } from 'ant-design-vue';
+  import { useMessage } from '/@/hooks/web/useMessage';
+  import { useI18n } from '/@/hooks/web/useI18n';
 
   export default defineComponent({
-    name: 'TaskManagment',
-    components: {
-      Step1,
-      Step2,
-      Step3,
-      PageWrapper,
-      [Steps.name]: Steps,
-      [Steps.Step.name]: Steps.Step,
-    },
+    name: 'TaskManagement',
+    components: { BasicTable, TaskDrawer, TableAction, Space },
     setup() {
-      const current = ref(0);
-
-      const state = reactive({
-        initSetp2: false,
-        initSetp3: false,
-        //保存 step1 的值
-        step1Values: {},
-        step2Values: {},
+      const { t } = useI18n();
+      const [registerDrawer, { openDrawer }] = useDrawer();
+      const { createConfirm } = useMessage();
+      const [registerTable, { reload, expandAll, collapseAll, getSelectRows }] = useTable({
+        title: '任务列表',
+        api: getList,
+        columns,
+        formConfig: {
+          labelWidth: 100,
+          schemas: searchFormSchema,
+        },
+        rowSelection: {
+          type: 'checkbox',
+        },
+        isTreeTable: true,
+        pagination: false,
+        striped: false,
+        useSearchForm: true,
+        showTableSetting: true,
+        bordered: true,
+        showIndexColumn: false,
+        canResize: false,
+        tableSetting: { fullScreen: true },
+        actionColumn: {
+          align: 'left',
+          width: 150,
+          title: t('common.operationText'),
+          dataIndex: 'action',
+          fixed: undefined,
+        },
       });
 
-      function handleStep1Next(step1Values: any) {
-        current.value++;
-        state.initSetp2 = true;
-        console.log(step1Values);
-        state.step1Values = step1Values;
+      function handleEdit(record: Recordable) {
+        openDrawer(true, {
+          record,
+          isUpdate: true,
+        });
       }
 
-      function handleStepPrev() {
-        state.initSetp2 = false;
-        current.value--;
+      function handleDetail(task_uuid) {
+        openDrawer(true, {
+          record,
+          isDetail: true,
+        });
       }
 
-      function handleStep2Next(step2Values: any) {
-        current.value++;
-        state.initSetp3 = true;
-        console.log(step2Values);
-        state.step2Values = step2Values;
-        console.log(state.step1Values, state.step2Values);
+      async function handlePause(task_uuid) {
+        await pauseItem(task_uuid);
+        message.success(t('common.successText'));
+        await reload();
       }
 
-      function handleRedo() {
-        current.value = 0;
-        state.initSetp2 = false;
-        state.initSetp3 = false;
+      async function handleResume(task_uuid) {
+        await resumeItem(task_uuid);
+        message.success(t('common.successText'));
+        await reload();
+      }
+
+      async function handleDelete(task_uuid) {
+        await deleteItem(task_uuid);
+        message.success(t('common.successText'));
+        await reload();
+      }
+
+      async function handleBulkDelete() {
+        if (getSelectRows().length == 0) {
+          message.warning(t('common.batchDelHintText'));
+        } else {
+          createConfirm({
+            iconType: 'warning',
+            title: t('common.hintText'),
+            content: t('common.delHintText'),
+            async onOk() {
+              for (const item of getSelectRows()) {
+                await deleteItem(item.uuid);
+              }
+              message.success(t('common.successText'));
+              await reload();
+            },
+          });
+        }
+      }
+
+      function handleSuccess() {
+        reload();
+      }
+
+      function onFetchSuccess() {
+        // 演示默认展开所有表项
+        nextTick(expandAll);
       }
 
       return {
-        current,
-        state,
-        handleStep1Next,
-        handleStep2Next,
-        handleRedo,
-        handleStepPrev,
-        ...toRefs(state),
+        registerTable,
+        registerDrawer,
+        handleEdit,
+        handlePause,
+        handleResume,
+        handleDetail,
+        handleDelete,
+        handleSuccess,
+        onFetchSuccess,
+        expandAll,
+        collapseAll,
+        handleBulkDelete,
+        t,
       };
     },
   });
 </script>
-<style lang="less" scoped>
-  .step-form-content {
-    padding: 24px;
-    background-color: @component-background;
-  }
-
-  .step-form-form {
-    width: 750px;
-    margin: 0 auto;
-  }
-</style>

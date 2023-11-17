@@ -1,335 +1,120 @@
-import { ref } from 'vue';
-import { FormSchema } from '/@/components/Form';
-import { getList as getProjectList } from '../project/api';
+import { BasicColumn } from '/@/components/Table';
+import { FormSchema } from '/@/components/Table';
+import { h } from 'vue';
+import { Tag } from 'ant-design-vue';
 
-export const projectOptions = ref([]);
+export const columns: BasicColumn[] = [
+  {
+    title: '任务名称',
+    dataIndex: 'task_name',
+    width: 110,
+  },
 
-const defaultPortMap = new Map([
-  ['all', '1-65535'],
-  [
-    'web',
-    '80,443,8080,8443,8000-8010,8888,8090,18080,28082,8081,9090,4848,7001,8009,88,389,445,3389,5900-5910',
-  ],
-  ['database', '3306,1521,1433,5432,27017,6379,11211,3308,50000,5000,5236,60000,9042,5984'],
-  [
-    'top100',
-    '7,9,13,21,22,23,25,26,37,53,79,80,81,88,106,110,111,113,119,135,139,143,144,179,199,389,427,443,444,445,465,513,514,515,543,544,548,554,587,631,646,873,990,993,995,1025,1026,1027,1028,1029,1110,1433,1720,1723,2000,2001,2049,2121,2717,3000,3128,3306,3389,3986,4899,5000,5009,5060,5101,5190,5357,5432,5631,5666,5800,5900,6000,6001,6646,7070,8000,8008,8009,8080,8081,8443,8888,9100,9999,32768,49152,49153,49154,49155,49156,49157',
-  ],
-  [
-    'top1000',
-    '1,3-4,6-7,9,13,17,19-26,30,32-33,37,42-43,49,53,70,79-85,88-90,99-100,106,109-111,113,119,125,135,139,143-144,146,161,163,179,199,211-212,222,254-256,259,264,280,301,306,311,340,366,389,406-407,416-417,425,427,443-445,458,464-465,481,497,500,512-515,524,541,543-545,548,554-555,563,587,593,616-617,625,631,636,646,648,666-668,683,687,691,700,705,711,714,720,722,726,749,765,777,783,787,800-801,808,843,873,880,888,898,900-903,911-912,981,987,990,992-993,995,999-1002,1007,1009-1011,1021-1100,1102,1104-1108,1110-1114,1117,1119,1121-1124,1126,1130-1132,1137-1138,1141,1145,1147-1149,1151-1152,1154,1163-1166,1169,1174-1175,1183,1185-1187,1192,1198-1199,1201,1213,1216-1218,1233-1234,1236,1244,1247-1248,1259,1271-1272,1277,1287,1296,1300-1301,1309-1311,1322,1328,1334,1352,1417,1433-1434,1443,1455,1461,1494,1500-1501,1503,1521,1524,1533,1556,1580,1583,1594,1600,1641,1658,1666,1687-1688,1700,1717-1721,1723,1755,1761,1782-1783,1801,1805,1812,1839-1840,1862-1864,1875,1900,1914,1935,1947,1971-1972,1974,1984,1998-2010,2013,2020-2022,2030,2033-2035,2038,2040-2043,2045-2049,2065,2068,2099-2100,2103,2105-2107,2111,2119,2121,2126,2135,2144,2160-2161,2170,2179,2190-2191,2196,2200,2222,2251,2260,2288,2301,2323,2366,2381-2383,2393-2394,2399,2401,2492,2500,2522,2525,2557,2601-2602,2604-2605,2607-2608,2638,2701-2702,2710,2717-2718,2725,2800,2809,2811,2869,2875,2909-2910,2920,2967-2968,2998,3000-3001,3003,3005-3007,3011,3013,3017,3030-3031,3052,3071,3077,3128,3168,3211,3221,3260-3261,3268-3269,3283,3300-3301,3306,3322-3325,3333,3351,3367,3369-3372,3389-3390,3404,3476,3493,3517,3527,3546,3551,3580,3659,3689-3690,3703,3737,3766,3784,3800-3801,3809,3814,3826-3828,3851,3869,3871,3878,3880,3889,3905,3914,3918,3920,3945,3971,3986,3995,3998,4000-4006,4045,4111,4125-4126,4129,4224,4242,4279,4321,4343,4443-4446,4449,4550,4567,4662,4848,4899-4900,4998,5000-5004,5009,5030,5033,5050-5051,5054,5060-5061,5080,5087,5100-5102,5120,5190,5200,5214,5221-5222,5225-5226,5269,5280,5298,5357,5405,5414,5431-5432,5440,5500,5510,5544,5550,5555,5560,5566,5631,5633,5666,5678-5679,5718,5730,5800-5802,5810-5811,5815,5822,5825,5850,5859,5862,5877,5900-5904,5906-5907,5910-5911,5915,5922,5925,5950,5952,5959-5963,5987-5989,5998-6007,6009,6025,6059,6100-6101,6106,6112,6123,6129,6156,6346,6389,6502,6510,6543,6547,6565-6567,6580,6646,6666-6669,6689,6692,6699,6779,6788-6789,6792,6839,6881,6901,6969,7000-7002,7004,7007,7019,7025,7070,7100,7103,7106,7200-7201,7402,7435,7443,7496,7512,7625,7627,7676,7741,7777-7778,7800,7911,7920-7921,7937-7938,7999-8002,8007-8011,8021-8022,8031,8042,8045,8080-8090,8093,8099-8100,8180-8181,8192-8194,8200,8222,8254,8290-8292,8300,8333,8383,8400,8402,8443,8500,8600,8649,8651-8652,8654,8701,8800,8873,8888,8899,8994,9000-9003,9009-9011,9040,9050,9071,9080-9081,9090-9091,9099-9103,9110-9111,9200,9207,9220,9290,9415,9418,9485,9500,9502-9503,9535,9575,9593-9595,9618,9666,9876-9878,9898,9900,9917,9929,9943-9944,9968,9998-10004,10009-10010,10012,10024-10025,10082,10180,10215,10243,10566,10616-10617,10621,10626,10628-10629,10778,11110-11111,11967,12000,12174,12265,12345,13456,13722,13782-13783,14000,14238,14441-14442,15000,15002-15004,15660,15742,16000-16001,16012,16016,16018,16080,16113,16992-16993,17877,17988,18040,18101,18988,19101,19283,19315,19350,19780,19801,19842,20000,20005,20031,20221-20222,20828,21571,22939,23502,24444,24800,25734-25735,26214,27000,27352-27353,27355-27356,27715,28201,30000,30718,30951,31038,31337,32768-32785,33354,33899,34571-34573,35500,38292,40193,40911,41511,42510,44176,44442-44443,44501,45100,48080,49152-49161,49163,49165,49167,49175-49176,49400,49999-50003,50006,50300,50389,50500,50636,50800,51103,51493,52673,52822,52848,52869,54045,54328,55055-55056,55555,55600,56737-56738,57294,57797,58080,60020,60443,61532,61900,62078,63331,64623,64680,65000,65129,65389,280,4567,7001,8008,9080',
-  ],
-  ['custom', ''],
-]);
+  {
+    title: '任务描述',
+    dataIndex: 'task_desc',
+    width: 110,
+  },
 
-let defaultPorts = defaultPortMap.get('custom');
+  {
+    title: '任务状态',
+    dataIndex: 'task_status',
+    width: 110,
+    customRender: ({ record }) => {
+      const status = record.task_status;
+      let text, color;
+      switch (status) {
+        case '1':
+          text = '进行中';
+          color = 'success';
+          break;
+        case '2':
+          text = '已终止';
+          color = 'error';
+          break;
+        case '3':
+          text = '已完成';
+          color = 'success';
+          break;
+        default:
+          text = '未知状态';
+          color = 'default';
+      }
+      return h(Tag, { color: color }, () => text);
+    },
+  },
 
-const portScanningOptions = [
-  { label: '全端口', value: 'all' },
-  { label: '常见web端口', value: 'web' },
-  { label: '常见数据库端口', value: 'database' },
-  { label: '常用top100端口', value: 'top100' },
-  { label: '常用top1000端口', value: 'top1000' },
-  { label: '自定义端口', value: 'custom' },
+  {
+    title: '创建时间',
+    dataIndex: 'create_datetime',
+    width: 180,
+  },
 ];
 
-export const step1Schemas: FormSchema[] = [
+export const searchFormSchema: FormSchema[] = [
+  {
+    field: 'name',
+    label: '任务名称',
+    component: 'Input',
+    colProps: { span: 8 },
+  },
+
+  {
+    field: 'status',
+    label: '任务状态',
+    component: 'Select',
+    componentProps: {
+      options: [
+        { label: '进行中', value: '1' },
+        { label: '已终止', value: '2' },
+        { label: '已完成', value: '3' },
+      ],
+    },
+  },
+];
+
+export const formSchema: FormSchema[] = [
+  {
+    field: 'task_uuid',
+    label: 'task_uuid',
+    component: 'Input',
+    show: false,
+  },
+
   {
     field: 'task_name',
-    component: 'Input',
     label: '任务名称',
+    component: 'Input',
     required: true,
-    colProps: {
-      span: 24,
-    },
-    helpMessage: '请输入当前任务名称',
-    componentProps: {
-      placeholder: '20231102 杭州市城市建设投资集团有限公司公网资产收集任务',
-    },
   },
-  {
-    field: 'project_uuid_id',
-    component: 'Select',
-    label: '关联项目',
-    required: true,
-    componentProps: {
-      options: projectOptions,
-    },
-    colProps: {
-      span: 24,
-    },
-    helpMessage: '选择与当前任务相关联的项目',
-  },
+
   {
     field: 'task_desc',
-    component: 'InputTextArea',
     label: '任务描述',
-    required: false,
-    colProps: {
-      span: 24,
-    },
-    helpMessage: '请输入当前任务描述',
-    componentProps: {
-      placeholder: '当前任务目标为收集杭州市城市建设投资集团有限公司公网数据资产',
-    },
+    component: 'InputTextArea',
   },
-  {
-    field: 'task_type',
-    component: 'Select',
-    label: '任务类型',
-    required: true,
-    defaultValue: '1',
-    componentProps: {
-      options: [
-        {
-          label: '公网资产监控',
-          value: '1',
-        },
-        {
-          label: '内网资产扫描',
-          value: '2',
-        },
-      ],
-    },
-  },
+
   {
     field: 'task_status',
-    component: 'Select',
     label: '任务状态',
-    required: true,
-    defaultValue: '1',
+    component: 'Select',
     componentProps: {
       options: [
-        {
-          label: '进行中',
-          value: '1',
-        },
-        {
-          label: '已终止',
-          value: '2',
-        },
-        {
-          label: '已完成',
-        },
+        { label: '进行中', value: '1' },
+        { label: '已终止', value: '2' },
+        { label: '已完成', value: '3' },
       ],
     },
-  },
-];
-
-export const publicSchemas: FormSchema[] = [
-  {
-    field: 'public_full_company_name_input',
-    component: 'Input',
-    label: '公司全称',
-    helpMessage: '请输入完整的公司全称，用于获取备案信息',
-    componentProps: {
-      placeholder: '杭州市城市建设投资集团有限公司',
-      style: 'width: 400px',
-    },
-  },
-  {
-    field: 'public_root_domain_input',
-    component: 'InputTextArea',
-    label: '根域名',
-    helpMessage: '请输入根域名，可以不填\n根域名格式为：xxx.com，或者 xxx.gov.cn\n换行符隔开',
-    componentProps: {
-      placeholder: 'dfcfw.com\nbaidu.com',
-      style: 'height: 200px; width: 400px;',
-    },
-  },
-  {
-    field: 'public_ip_input',
-    component: 'InputTextArea',
-    label: 'IP',
-    helpMessage:
-      '请输入IP，可以不填\nIP格式为：xxx.xxx.xxx.xxx，或者 xxx.xxx.xxx.xxx/16，或者 xxx.xxx.xxx.1-xxx.xxx.xxx.20\n换行符隔开',
-    componentProps: {
-      placeholder: '192.168.2.11\n211.12.212.34\n211.12.32.9/24\n211.12.3.4-211.12.3.7',
-      style: 'height: 200px; width: 400px;',
-    },
-  },
-  {
-    field: 'public_domain_brute_force',
-    component: 'Checkbox',
-    label: '域名爆破',
-    defaultValue: false,
-    labelWidth: 100,
-    componentProps: {
-      style: 'width: 50px;',
-    },
-  },
-  {
-    field: 'public_historical_domain_query',
-    component: 'Checkbox',
-    label: '历史域名查询',
-    defaultValue: false,
-    labelWidth: 100,
-    componentProps: {
-      style: 'width: 50px;',
-    },
-  },
-  {
-    field: 'public_port_scanning',
-    component: 'Select',
-    label: '端口扫描',
-    componentProps: {
-      options: portScanningOptions,
-      onChange: handlePortChange,
-    },
-    defaultValue: 'all',
-  },
-  {
-    field: 'public_default_ports_input',
-    component: 'InputTextArea',
-    label: '端口列表',
-    componentProps: {
-      placeholder: defaultPorts,
-      style: 'height: 100px; width: 400px;',
-    },
-    helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
-    ifShow: ({ values }) => values.public_port_scanning !== 'custom',
-  },
-  {
-    field: 'public_custom_ports_input',
-    component: 'InputTextArea',
-    label: '端口列表',
-    helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
-    componentProps: {
-      placeholder: '请输入端口',
-      style: 'height: 100px; width: 400px;',
-    },
-    defaultValue: '1-65535',
-    ifShow: ({ values }) => values.public_port_scanning === 'custom',
-  },
-  {
-    field: 'public_fingerprint_identification',
-    component: 'Checkbox',
-    label: '指纹识别',
-    defaultValue: false,
-    labelWidth: 100,
-    componentProps: {
-      style: 'width: 50px;',
-    },
-  },
-  {
-    field: 'public_fofa',
-    component: 'Checkbox',
-    label: 'FOFA',
-    defaultValue: true,
-    labelWidth: 100,
-    componentProps: {
-      style: 'width: 50px;',
-    },
-  },
-  {
-    field: 'public_hunter',
-    component: 'Checkbox',
-    label: 'Hunter',
-    defaultValue: false,
-    labelWidth: 100,
-    componentProps: {
-      style: 'width: 50px;',
-    },
-  },
-  {
-    field: 'public_quake',
-    component: 'Checkbox',
-    label: 'Quake',
-    defaultValue: true,
-    labelWidth: 100,
-    componentProps: {
-      style: 'width: 50px;',
-    },
-  },
-];
-
-export const privateSchemas: FormSchema[] = [
-  {
-    field: 'private_ip_input',
-    component: 'InputTextArea',
-    label: 'IP',
     required: true,
-    helpMessage:
-      '请输入IP，可以不填\nIP格式为：xxx.xxx.xxx.xxx，或者 xxx.xxx.xxx.xxx/16，或者 xxx.xxx.xxx.1-xxx.xxx.xxx.20\n换行符隔开',
+  },
+
+  {
+    field: 'create_datetime',
+    label: '创建时间',
+    component: 'DatePicker',
     componentProps: {
-      placeholder: '192.168.2.11\n10.2.3.4\n211.12.32.9/24',
-      style: 'height: 200px; width: 400px;',
+      showTime: true,
     },
-  },
-  {
-    field: 'private_port_scanning',
-    component: 'Select',
-    label: '端口扫描',
-    componentProps: {
-      options: portScanningOptions,
-      onChange: handlePortChange,
-    },
-    defaultValue: 'custom',
-  },
-  {
-    field: 'private_default_ports_input',
-    component: 'InputTextArea',
-    label: '端口列表',
-    componentProps: {
-      placeholder: defaultPorts,
-      style: 'height: 100px; width: 400px;',
-    },
-    helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
-    ifShow: ({ values }) => values.private_port_scanning !== 'custom',
-  },
-  {
-    field: 'private_custom_ports_input',
-    component: 'InputTextArea',
-    label: '端口列表',
-    helpMessage: '端口格式为80,443,8080-8088,通过逗号隔开',
-    componentProps: {
-      placeholder: '请输入端口',
-      style: 'height: 100px; width: 400px;',
-    },
-    defaultValue: '1-65535',
-    ifShow: ({ values }) => values.private_port_scanning === 'custom',
-  },
-  {
-    field: 'private_fingerprint_identification',
-    component: 'Checkbox',
-    label: '指纹识别',
-    defaultValue: false,
-  },
-  {
-    field: 'private_weak_password_detection',
-    component: 'Checkbox',
-    label: '弱口令探测',
-    defaultValue: false,
-  },
-  {
-    field: 'private_poc_scanning',
-    component: 'Checkbox',
-    label: 'POC 扫描',
-    defaultValue: false,
+    required: true,
   },
 ];
-
-export async function getProjectOptions() {
-  const response = await getProjectList();
-  projectOptions.value = response.items.map((item) => ({
-    label: `${item.project_name} --- ${item.project_desc} --- ${
-      item.project_status ? '进行中' : '已完成'
-    }`,
-    value: item.uuid,
-    disabled: !item.project_status,
-  }));
-}
-
-async function handlePortChange(value) {
-  const schema = privateSchemas.find((item) => item.field === 'private_default_ports_input');
-  if (schema) {
-    schema.defaultValue = defaultPortMap.get(value);
-    if (schema.componentProps) {
-      schema.componentProps.placeholder = defaultPortMap.get(value);
-    }
-    defaultPorts = defaultPortMap.get(value);
-    console.log(schema);
-  } else {
-    console.log('没有找到 field 为 "private_default_ports_input" 的元素');
-  }
-}
