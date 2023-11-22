@@ -17,6 +17,18 @@ export const columns: BasicColumn[] = [
   },
 
   {
+    title: '任务类型',
+    dataIndex: 'task_type',
+    width: 110,
+    customRender: ({ record }) => {
+      const type = record.task_type;
+      const text = type === '1' ? '公网资产监控' : type === '2' ? '内网资产扫描' : '未知类型';
+      const color = type === '1' ? 'blue' : type === '2' ? 'green' : 'default';
+      return h(Tag, { color: color }, () => text);
+    },
+  },
+
+  {
     title: '任务状态',
     dataIndex: 'task_status',
     width: 110,
@@ -104,16 +116,6 @@ export const formSchema: FormSchema[] = [
         { label: '已终止', value: '2' },
         { label: '已完成', value: '3' },
       ],
-    },
-    required: true,
-  },
-
-  {
-    field: 'create_datetime',
-    label: '创建时间',
-    component: 'DatePicker',
-    componentProps: {
-      showTime: true,
     },
     required: true,
   },

@@ -27,7 +27,7 @@
                 auth: ['dept:update'],
                 icon: 'ant-design:eye-outlined',
                 placement: 'left',
-                onClick: handleDetail.bind(null, record.uuid),
+                onClick: () => handleDetail(record.uuid, record.task_type),
                 tooltip: {
                   title: '查看详情',
                   placement: 'left',
@@ -95,11 +95,13 @@
   import { message, Space } from 'ant-design-vue';
   import { useMessage } from '/@/hooks/web/useMessage';
   import { useI18n } from '/@/hooks/web/useI18n';
+  import { useRouter } from 'vue-router';
 
   export default defineComponent({
     name: 'TaskManagement',
     components: { BasicTable, TaskDrawer, TableAction, Space },
     setup() {
+      const router = useRouter();
       const { t } = useI18n();
       const [registerDrawer, { openDrawer }] = useDrawer();
       const { createConfirm } = useMessage();
@@ -139,11 +141,10 @@
         });
       }
 
-      function handleDetail(task_uuid) {
-        openDrawer(true, {
-          record,
-          isDetail: true,
-        });
+      function handleDetail(task_uuid, task_type) {
+        if (task_type == '2') router.push({ name: 'PrivateTaskManagment', params: { task_uuid } });
+        else if (task_type == '1')
+          router.push({ name: 'PublicTaskManagment', params: { task_uuid } });
       }
 
       async function handlePause(task_uuid) {

@@ -5,8 +5,8 @@ enum PrivateTaskApi {
 }
 
 /**
- * 获取端口信息
+ * 获取任务信息及结果
  */
-export const getPortInfo = (params) => {
-  return defHttp.get({ url: PrivateTaskApi.prefix + 'getPort', params });
+export const getTaskResult = (params) => {
+  return defHttp.post({ url: PrivateTaskApi.prefix + '/', params });
 };
