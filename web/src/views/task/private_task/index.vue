@@ -10,7 +10,7 @@
     <template #footer>
       <a-tabs type="card" default-active-key="1">
         <a-tab-pane key="1" tab="任务情况汇总">
-          <TaskProgress :task_uuid="task_uuid" />
+          <TaskProgress :project_name="project_name" />
         </a-tab-pane>
         <a-tab-pane key="2" tab="端口信息"> <PortPage /> </a-tab-pane>
         <a-tab-pane key="3" tab="服务信息"> <PortPage /> </a-tab-pane>
