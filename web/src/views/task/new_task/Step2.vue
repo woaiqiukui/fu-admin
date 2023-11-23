@@ -75,8 +75,7 @@
             ...stepValue,
             ...values,
           };
-          console.log(taskValues);
-          await createOrUpdate(taskValues, false);
+          const result = await createOrUpdate(taskValues, false);
 
           setProps({
             submitButtonOptions: {
@@ -89,7 +88,7 @@
                 loading: false,
               },
             });
-            emit('next', values);
+            emit('next', values, result);
           }, 1500);
         } catch (error) {}
       }

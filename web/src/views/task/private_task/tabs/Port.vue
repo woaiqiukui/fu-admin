@@ -1,114 +1,10 @@
 <template>
-  <a-table :columns="columns" :data-source="data" :row-selection="rowSelection" bordered />
+  <a-table :columns="columns" :data-source="processedData" :row-selection="rowSelection" bordered />
 </template>
+
 <script lang="ts">
   import { defineComponent } from 'vue';
   import { Table } from 'ant-design-vue';
-
-  const columns = [
-    {
-      title: 'IP',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: '端口',
-      dataIndex: 'age',
-      key: 'age',
-      width: '32%',
-    },
-    {
-      title: 'Tag',
-      dataIndex: 'address',
-      width: '30%',
-      key: 'address',
-    },
-  ];
-
-  interface DataItem {
-    key: number;
-    name: string;
-    age: number;
-    address: string;
-    children?: DataItem[];
-  }
-
-  const data: DataItem[] = [
-    {
-      key: 1,
-      name: 'John Brown sr.',
-      age: 60,
-      address: 'New York No. 1 Lake Park',
-      children: [
-        {
-          key: 11,
-          name: 'John Brown',
-          age: 42,
-          address: 'New York No. 2 Lake Park',
-        },
-        {
-          key: 12,
-          name: 'John Brown jr.',
-          age: 30,
-          address: 'New York No. 3 Lake Park',
-          children: [
-            {
-              key: 121,
-              name: 'Jimmy Brown',
-              age: 16,
-              address: 'New York No. 3 Lake Park',
-            },
-          ],
-        },
-        {
-          key: 13,
-          name: 'Jim Green sr.',
-          age: 72,
-          address: 'London No. 1 Lake Park',
-          children: [
-            {
-              key: 131,
-              name: 'Jim Green',
-              age: 42,
-              address: 'London No. 2 Lake Park',
-              children: [
-                {
-                  key: 1311,
-                  name: 'Jim Green jr.',
-                  age: 25,
-                  address: 'London No. 3 Lake Park',
-                },
-                {
-                  key: 1312,
-                  name: 'Jimmy Green sr.',
-                  age: 18,
-                  address: 'London No. 4 Lake Park',
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      key: 2,
-      name: 'Joe Black',
-      age: 32,
-      address: 'Sidney No. 1 Lake Park',
-    },
-  ];
-
-  const rowSelection = {
-    onChange: (selectedRowKeys: (string | number)[], selectedRows: DataItem[]) => {
-      console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-    },
-    onSelect: (record: DataItem, selected: boolean, selectedRows: DataItem[]) => {
-      console.log(record, selected, selectedRows);
-    },
-    onSelectAll: (selected: boolean, selectedRows: DataItem[], changeRows: DataItem[]) => {
-      console.log(selected, selectedRows, changeRows);
-    },
-  };
 
   export default defineComponent({
     name: 'PortPage',
@@ -116,12 +12,84 @@
       [Table.name]: Table,
       [Table.Column.name]: Table.Column,
     },
-    setup() {
+    props: {
+      portResult: {
+        type: Array,
+        required: true,
+      },
+    },
+    data() {
       return {
-        data,
-        columns,
-        rowSelection,
+        columns: [
+          {
+            title: 'IP',
+            dataIndex: 'ip',
+            key: 'ip',
+          },
+          {
+            title: '端口',
+            dataIndex: 'port',
+            key: 'port',
+            width: '32%',
+          },
+          {
+            title: 'Tag',
+            dataIndex: 'tag',
+            width: '30%',
+            key: 'tag',
+          },
+        ],
+        processedData: [],
+        rowSelection: {}, // Add your rowSelection configuration if needed
       };
+    },
+    watch: {
+      portResult: {
+        handler(newVal) {
+          // Process the data here to collapse IPs
+          this.processedData = this.collapseIPs(newVal);
+        },
+        immediate: true,
+      },
+    },
+    methods: {
+      collapseIPs(data) {
+        // Implement IP collapsing logic here
+        // Example: Group data by IP
+        const groupedByIP = data.reduce((acc, item) => {
+          const key = item.ip;
+          acc[key] = [...(acc[key] || []), item];
+          return acc;
+        }, {});
+
+        // Process each group and collect results
+        const processedData = Object.entries(groupedByIP).map(([ip, group]) => {
+          // Sort group by port in ascending order
+          group.sort((a, b) => a.port - b.port);
+
+          // Transform the data structure for each IP group
+          const transformedGroup = group.map((item, index) => ({
+            key: index + 1,  // Use a numeric key for each item
+            ip: item.ip,
+            port: item.port,
+            tag: item.tag,
+            // Add more properties as needed
+          }));
+
+          // Return the processed data for each IP
+          return {
+            key: group[0].port,  // Use the smallest port as the key for the main group
+            ip,
+            port: group[0].port,  // Use the smallest port as the port for the main group
+            tag: group[0].tag,    // Use the tag of the item with the smallest port
+            // Add more properties as needed
+            ...(transformedGroup.length > 0 && { children: transformedGroup }),  // Add children only if they exist
+          };
+        });
+
+        console.log(processedData);
+        return processedData;
+      },
     },
   });
 </script>

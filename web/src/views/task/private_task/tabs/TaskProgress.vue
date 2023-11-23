@@ -48,58 +48,32 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent, onMounted, ref, watch } from 'vue';
-  import { getTaskResult } from '../api';
+  import { defineComponent } from 'vue';
+  import { toRefs } from '@vueuse/core';
+  import { Divider, Card, Descriptions, Steps, Tabs } from 'ant-design-vue';
 
   export default defineComponent({
     name: 'TaskProgress',
+    components: {
+      [Divider.name]: Divider,
+      [Card.name]: Card,
+      [Descriptions.name]: Descriptions,
+      [Descriptions.Item.name]: Descriptions.Item,
+      [Steps.name]: Steps,
+      [Steps.Step.name]: Steps.Step,
+      [Tabs.name]: Tabs,
+      [Tabs.TabPane.name]: Tabs.TabPane,
+    },
     props: {
-      task_uuid: String,
+      project_name: String,
+      task_create_time: Date,
+      port_result: Array,
+      task_name: String,
     },
     setup(props) {
-      const project_name = ref('');
-      const task_list_name_and_uuid = ref([]);
-      const port_result = ref([]);
-      const task_result = ref([]);
-      const task_create_time = ref('');
-      const task_name = ref('');
+      const { project_name, task_create_time, port_result, task_name } = toRefs(props);
 
-      const fetchData = async () => {
-        if (props.task_uuid) {
-          const taskResult = await getTaskResult(props.task_uuid);
-          if (taskResult && taskResult.data) {
-            project_name.value = taskResult.data.project_name;
-            task_list_name_and_uuid.value = taskResult.data.task_list_name_and_uuid;
-            port_result.value = taskResult.data.port_result;
-            task_result.value = taskResult.data.task_result;
-
-            task_create_time.value =
-              task_result.value.length > 0 ? task_result.value[0].update_datetime : '';
-            task_name.value = task_result.value.length > 0 ? task_result.value[0].task_name : '';
-          }
-        }
-      };
-
-      watch(
-        () => props.task_uuid,
-        (newValue) => {
-          if (newValue) {
-            fetchData();
-          }
-        },
-        { immediate: true },
-      );
-
-      onMounted(() => {
-        fetchData();
-      });
-
-      return {
-        project_name,
-        task_create_time,
-        port_result,
-        task_name,
-      };
+      return {};
     },
   });
 </script>

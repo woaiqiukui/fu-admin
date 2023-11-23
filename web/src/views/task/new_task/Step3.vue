@@ -3,7 +3,7 @@
     <a-result status="success" title="任务创建成功">
       <template #extra>
         <a-button type="primary" @click="redo"> 创建新任务 </a-button>
-        <a-button> 查看任务详情 </a-button>
+        <a-button @click="navigateToTask(task_uuid)"> 查看任务详情 </a-button>
       </template>
     </a-result>
     <div class="desc-wrap">
@@ -28,6 +28,7 @@
 <script lang="ts">
   import { defineComponent } from 'vue';
   import { Result, Descriptions } from 'ant-design-vue';
+  import { router } from '/@/router';
 
   export default defineComponent({
     components: {
@@ -44,6 +45,10 @@
         type: Object,
         required: true,
       },
+      result: {
+        type: Object,
+        required: true,
+      },
     },
     emits: ['redo'],
     setup(props, { emit }) {
@@ -52,12 +57,20 @@
       // eslint-disable-next-line vue/no-setup-props-destructure
       const stepValue2 = props.step2Values;
 
+      // eslint-disable-next-line vue/no-setup-props-destructure
+      const task_uuid = props.result.uuid;
+      const navigateToTask = (taskUuid) => {
+        console.log(stepValue1);
+        router.push(`/task/private_task/${taskUuid}`);
+      };
       return {
         redo: () => {
           emit('redo');
         },
         stepValue1,
         stepValue2,
+        task_uuid,
+        navigateToTask,
       };
     },
   });

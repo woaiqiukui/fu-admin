@@ -22,6 +22,7 @@
         v-if="initSetp3"
         :step1Values="state.step1Values"
         :step2Values="state.step2Values"
+        :result="state.result"
       />
     </div>
   </PageWrapper>
@@ -53,6 +54,7 @@
         //保存 step1 的值
         step1Values: {},
         step2Values: {},
+        result: {},
       });
 
       function handleStep1Next(step1Values: any) {
@@ -67,11 +69,12 @@
         current.value--;
       }
 
-      function handleStep2Next(step2Values: any) {
+      function handleStep2Next(step2Values: any, result: any) {
         current.value++;
         state.initSetp3 = true;
         console.log(step2Values);
         state.step2Values = step2Values;
+        state.result = result;
         console.log(state.step1Values, state.step2Values);
       }
 

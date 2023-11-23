@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'generator',
     'project',
     'task',
+    'watchvuln',
 ]
 
 MIDDLEWARE = [

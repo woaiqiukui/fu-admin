@@ -1,7 +1,11 @@
 <template>
   <PageWrapper :title="project_name" contentBackground>
     <template #extra>
-      <a-button v-for="task in task_list_name_and_uuid" :key="task.uuid">
+      <a-button
+        v-for="task in task_list_name_and_uuid"
+        :key="task.uuid"
+        @click="navigateToTask(task.uuid)"
+      >
         {{ task.task_name }}
       </a-button>
       <a-button type="primary"> {{ task_name }} </a-button>
@@ -10,9 +14,14 @@
     <template #footer>
       <a-tabs type="card" default-active-key="1">
         <a-tab-pane key="1" tab="任务情况汇总">
-          <TaskProgress :project_name="project_name" />
+          <TaskProgress
+            :project_name="project_name"
+            :task_create_time="task_create_time"
+            :port_result="port_result"
+            :task_name="task_name"
+          />
         </a-tab-pane>
-        <a-tab-pane key="2" tab="端口信息"> <PortPage /> </a-tab-pane>
+        <a-tab-pane key="2" tab="端口信息"> <PortPage :portResult="port_result" /> </a-tab-pane>
         <a-tab-pane key="3" tab="服务信息"> <PortPage /> </a-tab-pane>
         <a-tab-pane key="4" tab="指纹信息"> <PortPage /> </a-tab-pane>
         <a-tab-pane key="5" tab="弱口令信息"> <PortPage /> </a-tab-pane>
@@ -27,7 +36,7 @@
   import { Ref, defineComponent, onMounted, ref, watch } from 'vue';
   import { PageWrapper } from '/@/components/Page';
   import { Divider, Card, Descriptions, Steps, Tabs } from 'ant-design-vue';
-  import { useRoute } from 'vue-router';
+  import { useRoute, useRouter } from 'vue-router';
   import { getTaskResult } from './api';
 
   export default defineComponent({
@@ -47,6 +56,7 @@
     },
     setup() {
       const route = useRoute();
+      const router = useRouter();
       const task_uuid = ref<string>('');
 
       interface TaskResultItem {
@@ -85,8 +95,12 @@
       const port_result = ref([]);
       const task_result: Ref<TaskResultItem[]> = ref([]);
 
-      const task_create_time: Ref<Date | null> = ref(null);
+      const task_create_time: Ref<Date | undefined> = ref(undefined);
       const task_name = ref('');
+
+      const navigateToTask = (taskUuid) => {
+        router.push(`/task/private_task/${taskUuid}`);
+      };
 
       const fetchData = async () => {
         if (task_uuid.value) {
@@ -100,7 +114,7 @@
             port_result.value = taskResult.port_result;
             task_result.value = taskResult.task_result;
             task_create_time.value =
-              task_result.value.length > 0 ? task_result.value[0].update_datetime : null;
+              task_result.value.length > 0 ? task_result.value[0]?.update_datetime : undefined;
             task_name.value = task_result.value.length > 0 ? task_result.value[0].task_name : '';
           }
         }
@@ -130,6 +144,9 @@
         task_uuid,
         task_name,
         task_list_name_and_uuid,
+        task_create_time,
+        port_result,
+        navigateToTask,
       };
     },
   });
