@@ -11,7 +11,7 @@ from generator.router import generator_router
 from project.router import project_router
 from task.router import task_router
 from watchvuln.router import watchvuln_router
-
+from event.router import event_router
 
 api = FuNinjaAPI(auth=GlobalAuth())
 
@@ -32,3 +32,4 @@ api.add_router('/generator/', generator_router)
 api.add_router('/project/', project_router)
 api.add_router('/task/', task_router)
 api.add_router('/watchvuln/', watchvuln_router)
+api.add_router('/event/', event_router)

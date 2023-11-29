@@ -17,8 +17,7 @@ def get_webhook_events(request):
         response_data = []
         for event in webhook_events:
             event_data = {
-                "event_type": event.event_type,
-                "unique_key": event.unique_key,
+                "key": event.key,
                 "title": event.title,
                 "description": event.description,
                 "severity": event.severity,
@@ -27,8 +26,11 @@ def get_webhook_events(request):
                 "solutions": event.solutions,
                 "references": event.references,
                 "tags": event.tags,
+                "github_search": event.github_search,
                 "from_source": event.from_source,
-                "reason": event.reason,
+                "pushed": event.pushed,
+                "create_time": event.create_time,
+                "update_time": event.update_time,
                 # Add other fields as needed
             }
             response_data.append(event_data)
@@ -51,8 +53,7 @@ def webhook_receiver(request):
         # Store the received data in the database
         if event_type == "watchvuln-vulninfo":
             webhook_event = WebhookEvent.objects.create(
-                event_type=event_type,
-                unique_key=content.get("unique_key"),
+                key=content.get("unique_key"),
                 title=content.get("title"),
                 description=content.get("description"),
                 severity=content.get("severity"),
@@ -61,8 +62,9 @@ def webhook_receiver(request):
                 solutions=content.get("solutions"),
                 references=content.get("references"),
                 tags=content.get("tags"),
+                github_search=content.get("github_search"),
                 from_source=content.get("from"),
-                reason=content.get("reason"),
+                pushed=content.get("pushed"),
                 # Add other fields as needed
             )
 
