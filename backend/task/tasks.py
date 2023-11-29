@@ -3,16 +3,23 @@ import uuid
 from fuadmin.celery import app
 import subprocess
 from .models import Task
+from celery.utils.log import get_logger
+logger = get_logger(__name__)
+
+
+enum TaskType:
+
+
+class TaskManage:
+    def __init__(self):
+        self.task_dispatcher = TaskDispatcher()
+        self.task_registry = TaskRegistry()
+        self.task_performer = TaskPerformer(app)
 
 @app.task(name="task.tasks.get_task")
 def get_task():
   return 'test'
 
-naabu_path = 'utils/tools/naabu'
-import json
-import subprocess
-from .models import Port, Task
-from fuadmin.celery import app
 
 naabu_path = 'utils/tools/naabu'
 

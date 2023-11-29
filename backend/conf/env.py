@@ -18,7 +18,7 @@ DATABASE_NAME = "yunying"
 # ************** redis配置，无redis 可不进行配置  ************** #
 # ================================================= #
 REDIS_PASSWORD = 'f1G!19dfd'
-REDIS_HOST = '127.0.0.1'
+REDIS_HOST = '10.32.129.178'
 REDIS_URL = f'redis://:{REDIS_PASSWORD or ""}@{REDIS_HOST}:18363'
 
 # ================================================= #
