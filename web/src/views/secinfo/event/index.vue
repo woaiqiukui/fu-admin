@@ -28,7 +28,7 @@
         try {
           // Make the API request to get SecInfo data
           const response = await getSecInfoList(); // Assuming getSecInfoList is imported
-          secInfoList.value = response;
+          secInfoList.value = response.reverse();
           console.log(secInfoList.value);
         } catch (error) {
           console.error('Error fetching data:', error);
