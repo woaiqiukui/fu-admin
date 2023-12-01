@@ -277,7 +277,27 @@ CELERY_WORKER_CONCURRENCY = 2  # 并发数
 CELERY_MAX_TASKS_PER_CHILD = 5  # 没个worker最多执行5个任务便自我销毁释放内存
 CELERY_TIMEZONE = TIME_ZONE  # celery 时区问题
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'  # Backend数据库
-
+CELERY_QUEUES = {
+    "default": {
+        "exchange": "default",
+        "exchange_type": "direct",
+        "routing_key": "default",
+    },
+    "subdomainScan": {
+        "exchange": "subdomainScan",
+        "exchange_type": "direct",
+        "routing_key": "subdomainScan",
+    },
+    "portScan": {
+        "exchange": "portScan",
+        "exchange_type": "direct",
+        "routing_key": "portScan",
+    },
+}
+CELERY_ROUTES = {
+    'task.tasks.subdomainScan': {'queue': 'subdomainScan', 'routing_key': 'subdomainScan'},
+    'task.tasks.portScan': {'queue': 'portScan', 'routing_key': 'portScan'},
+}
 
 # token 有效时间 时 分 秒
 TOKEN_LIFETIME = 12 * 60 * 60
