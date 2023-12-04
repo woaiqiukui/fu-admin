@@ -151,8 +151,8 @@ def subdomainScan(self, params):
 
 # portScan params
 # {
-#   "ports": "3306\n6379\n1433",
-#   "hosts": "10.30.2.2\n10.30.2.3\n10.30.2.4"
+#   "port": "3306\n6379\n1433",
+#   "target": "10.30.2.2\n10.30.2.3\n10.30.2.4"
 # }
 @app.task(bind=True, name="task.tasks.portScan", queue="portScan", base=BaseTaskWithRetry)
 def portScan(self, params):
@@ -160,8 +160,19 @@ def portScan(self, params):
     try:
         naabu_path = 'utils/tools/naabu'
         # Update task status to running
-        self.update_state(state='PROGRESS', meta={'current': 50, 'total': 100})
-        pass
+        self.update_state(state='PROGRESS')
+        result = subprocess.run([naabu_path, '-p', params['port'], '-host', params['target']], stdout=subprocess.PIPE)
+        # save result into database
+        result = result.stdout.decode('utf-8')
+        result = result.split('\n')
+        for line in result:
+            if line:
+                line = line.split(':')
+                ip = line[0]
+                port = line[1]
+                port_type = line[2]
+                port = Port(ip=ip, port=port, port_type=port_type)
+                port.save()
         # if redis.ismember('tasks.revoked', self.request.id):
         #     raise Ignore()
     except MemoryError as exc:
@@ -171,6 +182,7 @@ def portScan(self, params):
             raise Reject(exc, requeue=False)
     except Exception as e:
         logger.error("Port Scan Failed")
+        return e
 
     return "Port Scan Complete"
 

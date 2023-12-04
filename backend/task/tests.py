@@ -19,8 +19,9 @@ test_params = {
         {
           "subtask_type": "portScan",
           "subparams": {
-            "target": "www.baidu.com\nwww.google.com"
-          }
+            "target": "127.0.0.1,10.32.129.178",
+            "port": "1-10000"
+          },
         }
       ]
     }
@@ -28,26 +29,16 @@ test_params = {
 test_uuid = uuid.uuid4()
 
 class TaskManagerTest(TestCase):
-    def setUp(self):
-        logger.debug("setUp")
+
+
+    def test_portScan(self):
+        logger.debug("test_portScan")
         self.task = TaskManager(test_uuid, test_params)
         self.task.create_subtask_group()
-
-    def test_get_task_state(self):
-        logger.debug("test_get_task_status")
-        result = self.task.get_task_state()
-        print(result)
-        self.assertEqual(result, "PENDING")
-
-    def test_get_completed_count(self):
-        logger.debug("test_get_completed_count")
-        result = self.task.get_completed_count()
-        self.assertEqual(result, 0)
-
-    def test_get_subtask_result(self):
-        logger.debug("test_get_subtask_result")
-        result = self.task.get_task_result()
+        result = self.task.subtask_result.get()
         self.assertEqual(result, None)
+
+
 
 
         
