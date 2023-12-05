@@ -7,7 +7,7 @@ logger = get_task_logger(__name__)
 
 # Create your tests here.
 test_params = {
-      "task_uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+      "task_uuid": "0f32536057ce4d34acb629db7ebaeb1f",
       "if_crontab": False,
       "params": [
         {
@@ -19,7 +19,7 @@ test_params = {
         {
           "subtask_type": "portScan",
           "subparams": {
-            "target": "127.0.0.1,10.32.129.178",
+            "target": "127.0.0.1\n47.100.82.223",
             "port": "1-10000"
           },
         }
@@ -34,8 +34,8 @@ class TaskManagerTest(TestCase):
     def test_portScan(self):
         logger.debug("test_portScan")
         self.task = TaskManager(test_uuid, test_params)
-        self.task.create_subtask_group()
-        result = self.task.subtask_result.get()
+        if self.task.create_subtask_group():
+          result = self.task.subtask_result.get()
         self.assertEqual(result, None)
 
 

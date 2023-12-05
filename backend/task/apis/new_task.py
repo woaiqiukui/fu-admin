@@ -80,13 +80,13 @@ def create_demo(request, data: TaskSchemaIn):
     data.project_uuid = project
     task = create(request, data, Task)
     # 判断任务类型并分发异步任务
-    if task.task_type == '1':
-        public_task.delay(str(task.uuid))
-    elif task.task_type == '2':
-        if (task.private_port_scanning == 'custom'):
-            portScan.delay(task.private_ip_input, task.private_custom_ports_input, task.uuid)
-        else:
-            portScan.delay(task.private_ip_input, task.private_default_ports_input, task.uuid)
+    # if task.task_type == '1':
+    #     public_task.delay(str(task.uuid))
+    # elif task.task_type == '2':
+    #     if (task.private_port_scanning == 'custom'):
+    #         portScan.delay(task.private_ip_input, task.private_custom_ports_input, task.uuid)
+    #     else:
+    #         portScan.delay(task.private_ip_input, task.private_default_ports_input, task.uuid)
     return task
 
 # 删除Task

@@ -1,4 +1,4 @@
-import ipaddress
+import os
 import uuid
 from fuadmin.celery import app
 import subprocess
@@ -10,6 +10,7 @@ from celery.utils.log import get_task_logger
 from celery.worker.request import Request
 from celery import group, states
 from celery import Task as CeleryTask
+import xml.etree.ElementTree as ET
 
 
 logger = get_task_logger(__name__)
@@ -56,9 +57,10 @@ class TaskManager:
             subtask_type = param['subtask_type']
             subparams = param['subparams']
             if subtask_type == 'subdomainScan':
-                self.task_list.append(subdomainScan.s(subparams))
+                self.task_list.append(subdomainScan.s(subparams, self.task_params['task_uuid']))
             elif subtask_type == 'portScan':
-                self.task_list.append(portScan.s(subparams))
+                for target in subparams['target'].split('\n'):
+                    self.task_list.append(portScan.s(target, subparams['port'], self.task_params['task_uuid']))
         job = group(*self.task_list)
         self.subtask_result = job.apply_async()
         return self.subtask_result
@@ -130,7 +132,7 @@ class BaseTaskWithRetry(CeleryTask):
 
 
 @app.task(bind=True, name="task.tasks.subdomainScan", queue="subdomainScan")
-def subdomainScan(self, params):
+def subdomainScan(self, params, task_uuid):
     logger.info("Executing Subdomain Scan task id {0.id}".format(self.request))
     try:
         # Update task status to running
@@ -150,29 +152,52 @@ def subdomainScan(self, params):
 
 
 # portScan params
-# {
-#   "port": "3306\n6379\n1433",
-#   "target": "10.30.2.2\n10.30.2.3\n10.30.2.4"
-# }
+# test_params = {
+#       "task_uuid": "0f32536057ce4d34acb629db7ebaeb1f",
+#       "if_crontab": False,
+#       "params": [
+#         {
+#           "subtask_type": "portScan",
+#           "subparams": {
+#             "target": "127.0.0.1\n47.100.82.223",
+#             "port": "1-10000"
+#           },
+#         }
+#       ]
+#     }
 @app.task(bind=True, name="task.tasks.portScan", queue="portScan", base=BaseTaskWithRetry)
-def portScan(self, params):
+def portScan(self, target, port, task_uuid):
     logger.info("Executing Port Scan task id {0.id}".format(self.request))
     try:
         naabu_path = 'utils/tools/naabu'
         # Update task status to running
         self.update_state(state='PROGRESS')
-        result = subprocess.run([naabu_path, '-p', params['port'], '-host', params['target']], stdout=subprocess.PIPE)
-        # save result into database
-        result = result.stdout.decode('utf-8')
-        result = result.split('\n')
-        for line in result:
-            if line:
-                line = line.split(':')
-                ip = line[0]
-                port = line[1]
-                port_type = line[2]
-                port = Port(ip=ip, port=port, port_type=port_type)
+        random_uuid = uuid.uuid4()
+        result = subprocess.run([naabu_path, '-p', port, '-host', target, '-nmap-cli', 'nmap -sS -sV -oX utils/tools/{}.xml'.format(random_uuid)], stdout=subprocess.PIPE)
+        # 解析XML文件
+        tree = ET.parse('utils/tools/{}.xml'.format(random_uuid))
+        logger.info("Port Scan Result: {}".format(tree))
+        root = tree.getroot()
+        for host in root.findall('host'):
+            address = host.find('address').attrib.get('addr', 'Unknown')
+            for port in host.find('ports').findall('port'):
+                port_id = port.attrib.get('portid', 'Unknown')
+                protocol = port.attrib.get('protocol', 'Unknown')
+                state = port.find('state').attrib.get('state', 'Unknown')
+                service_element = port.find('service')
+                if service_element is not None:
+                    service = port.find('service').attrib.get('name', 'Unknown')
+                    product = port.find('service').attrib.get('product', 'Unknown')
+                    version = port.find('service').attrib.get('version', 'Unknown')
+                else:
+                    service = 'Unknown'
+                    product = 'Unknown'
+                    version = 'Unknown'
+                # 插入数据库
+                port = Port(task_uuid_id=task_uuid, address=address, port=port_id, protocol=protocol, state=state, service=service, product=product, version=version)
                 port.save()
+        # 删除 xml
+        os.remove('utils/tools/{}.xml'.format(random_uuid))
         # if redis.ismember('tasks.revoked', self.request.id):
         #     raise Ignore()
     except MemoryError as exc:
@@ -181,8 +206,8 @@ def portScan(self, params):
         if exc.errno == errno.ENOMEM:
             raise Reject(exc, requeue=False)
     except Exception as e:
-        logger.error("Port Scan Failed")
-        return e
+        logger.error("Port Scan Failed: {}".format(e))
+        raise e
 
     return "Port Scan Complete"
 

@@ -38,9 +38,13 @@ class Task(yunyingModel):
 
 class Port(resultModel):
     task_uuid = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="任务UUID")
-    ip = models.CharField(max_length=128, verbose_name="IP地址")
+    address = models.CharField(max_length=128, verbose_name="IP地址")
     port = models.CharField(max_length=128, verbose_name="端口")
-    tag = models.CharField(max_length=128, verbose_name="标签")
+    protocol = models.CharField(max_length=128, verbose_name="协议", default="Unknown")
+    state = models.CharField(max_length=128, verbose_name="状态", default="Unknown")
+    service = models.CharField(max_length=128, verbose_name="服务", default="Unknown")
+    product = models.CharField(max_length=128, verbose_name="产品", default="Unknown")
+    version = models.CharField(max_length=128, verbose_name="版本", default="Unknown")
 
     class Meta:
         db_table = "task_port"
