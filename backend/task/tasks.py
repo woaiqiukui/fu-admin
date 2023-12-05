@@ -132,7 +132,7 @@ class BaseTaskWithRetry(CeleryTask):
 
 
 @app.task(bind=True, name="task.tasks.subdomainScan", queue="subdomainScan")
-def subdomainScan(self, params, task_uuid):
+def SubdomainScan(self, params, task_uuid):
     logger.info("Executing Subdomain Scan task id {0.id}".format(self.request))
     try:
         # Update task status to running
@@ -151,6 +151,30 @@ def subdomainScan(self, params, task_uuid):
     return "Subdomain Scan Complete"
 
 
+def HostCollisionScan():
+    pass
+
+def CDNScan():
+    pass
+
+def DnsBruteForceScan():
+    pass
+
+def HistoricalDomainQuery():
+    pass
+
+def FofaScan():
+    pass
+
+def HunterScan():
+    pass
+
+def QuakeScan():
+    pass
+
+
+
+
 # portScan params
 # test_params = {
 #       "task_uuid": "0f32536057ce4d34acb629db7ebaeb1f",
@@ -166,7 +190,7 @@ def subdomainScan(self, params, task_uuid):
 #       ]
 #     }
 @app.task(bind=True, name="task.tasks.portScan", queue="portScan", base=BaseTaskWithRetry)
-def portScan(self, target, port, task_uuid):
+def PortScan(self, target, port, task_uuid):
     logger.info("Executing Port Scan task id {0.id}".format(self.request))
     try:
         naabu_path = 'utils/tools/naabu'
@@ -212,3 +236,12 @@ def portScan(self, target, port, task_uuid):
     return "Port Scan Complete"
 
    
+def fingerScan():
+    pass
+
+def weakpassScan():
+    pass
+
+def pocScan():
+    pass
+
