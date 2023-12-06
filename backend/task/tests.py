@@ -10,18 +10,21 @@ test_params = {
       "task_uuid": "0f32536057ce4d34acb629db7ebaeb1f",
       "if_crontab": False,
       "params": [
+        # {
+        #   "subtask_type": "SubdomainScan",
+        #   "subparams": {
+        #     "target": "www.baidu.com\nwww.google.com"
+        #   }
+        # },
+        # {
+        #   "subtask_type": "PortScan",
+        #   "subparams": {
+        #     "target": "127.0.0.1\n47.100.82.223",
+        #     "port": "1-10000"
+        #   },
+        # },
         {
-          "subtask_type": "subdomainScan",
-          "subparams": {
-            "target": "www.baidu.com\nwww.google.com"
-          }
-        },
-        {
-          "subtask_type": "portScan",
-          "subparams": {
-            "target": "127.0.0.1\n47.100.82.223",
-            "port": "1-10000"
-          },
+           "subtask_type": "UrlScan",
         }
       ]
     }
