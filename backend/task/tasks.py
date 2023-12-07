@@ -1,8 +1,9 @@
 import os, platform
 import uuid
+import json
 from fuadmin.celery import app
 import subprocess
-from .models import Port, Task
+from .models import Port, Task, Url
 from enum import Enum
 import errno
 from celery.exceptions import Reject, Ignore
@@ -58,7 +59,8 @@ class TaskManager:
     def create_subtask_group(self):
         for param in self.task_params['params']:
             subtask_type = param['subtask_type']
-            subparams = param['subparams']
+            if 'subparams' in param:
+                subparams = param['subparams']
             if subtask_type == 'SubdomainScan':
                 self.task_list.append(SubdomainScan.s(subparams, self.task_params['task_uuid']))
             elif subtask_type == 'PortScan':
@@ -266,7 +268,18 @@ def UrlScan(self, task_uuid):
         for obj in port_objects:
             address_port = obj.address + ':' + obj.port
             address_port_list.append(address_port)
-        
+        address_port_str = ','.join(address_port_list)
+        try:
+            result = subprocess.run([httpx_path, '-json', '-u', address_port_str, '-fl', '0', '-mc' ,'200,302,403,404,204,303,400,401,405'], stdout=subprocess.PIPE)
+            if result.stdout:
+                # 存入数据库
+                result_lines = result.stdout.decode().splitlines()
+                json_results = [json.loads(line) for line in result_lines]
+                for json_result in json_results:
+                    url = Url(task_uuid_id=task_uuid, port=json_result.get('port', 'Unknown'), url=json_result.get('url', 'Unknown'), title=json_result.get('title', 'Unknown'), scheme=json_result.get('scheme', 'Unknown'), webserver=json_result.get('webserver', 'Unknown'), content_type=json_result.get('content_type', 'Unknown'), method=json_result.get('method', 'Unknown'), host=json_result.get('host', 'Unknown'), path=json_result.get('path', 'Unknown'), time=json_result.get('time', 'Unknown'), status_code=json_result.get('status_code', 'Unknown'))
+                    url.save()
+        except Exception as e:
+            logger.error("Url Scan Failed: {}".format(e))
     except MemoryError as exc:
         raise Reject(exc, requeue=False)
     except OSError as exc:

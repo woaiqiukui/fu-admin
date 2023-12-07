@@ -52,3 +52,23 @@ class Port(resultModel):
         verbose_name_plural = verbose_name
         ordering = ('-create_datetime',)
 
+
+class Url(resultModel):
+    task_uuid = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="任务UUID")
+    port = models.CharField(max_length=128, verbose_name="端口")
+    url = models.CharField(max_length=128, verbose_name="URL")
+    title = models.CharField(max_length=128, verbose_name="标题", default="Unknown")
+    scheme = models.CharField(max_length=128, verbose_name="协议", default="Unknown")
+    webserver = models.CharField(max_length=128, verbose_name="Web服务器", default="Unknown")
+    content_type = models.CharField(max_length=128, verbose_name="内容类型", default="Unknown")
+    method = models.CharField(max_length=128, verbose_name="请求方法", default="Unknown")
+    host = models.CharField(max_length=128, verbose_name="主机", default="Unknown")
+    path = models.CharField(max_length=128, verbose_name="路径", default="Unknown")
+    time = models.CharField(max_length=128, verbose_name="响应时间", default="Unknown")
+    status_code = models.CharField(max_length=128, verbose_name="状态码", default="Unknown")
+
+    class Meta:
+        db_table = "task_url"
+        verbose_name = "URL信息"
+        verbose_name_plural = verbose_name
+        ordering = ('-create_datetime',)

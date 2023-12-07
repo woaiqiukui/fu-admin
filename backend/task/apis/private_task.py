@@ -4,7 +4,6 @@ from django.http import JsonResponse
 from ninja import Router, ModelSchema, Query, Field
 from ninja.pagination import paginate
 from project.models import Project
-from ..tasks import portScan
 from utils.yunying_crud import create, delete, update, retrieve, ImportSchema, export_data, import_data
 from utils.fu_ninja import YunYingFilters, MyPagination
 from ..models import Port, Task
