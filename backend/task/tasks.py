@@ -3,7 +3,7 @@ import uuid
 import json
 from fuadmin.celery import app
 import subprocess
-from .models import Port, Task, Url
+from .models import Port, Task, Url, Finger
 from enum import Enum
 import errno
 from celery.exceptions import Reject, Ignore
@@ -68,6 +68,8 @@ class TaskManager:
                     self.task_list.append(PortScan.s(target, subparams['port'], self.task_params['task_uuid']))
             elif subtask_type == 'UrlScan':
                 self.task_list.append(UrlScan.s(self.task_params['task_uuid']))
+            elif subtask_type == 'FingerScan':
+                self.task_list.append(FingerScan.s(self.task_params['task_uuid']))
 
         job = group(*self.task_list)
         self.subtask_result = job.apply_async()
@@ -269,17 +271,14 @@ def UrlScan(self, task_uuid):
             address_port = obj.address + ':' + obj.port
             address_port_list.append(address_port)
         address_port_str = ','.join(address_port_list)
-        try:
-            result = subprocess.run([httpx_path, '-json', '-u', address_port_str, '-fl', '0', '-mc' ,'200,302,403,404,204,303,400,401,405'], stdout=subprocess.PIPE)
-            if result.stdout:
-                # 存入数据库
-                result_lines = result.stdout.decode().splitlines()
-                json_results = [json.loads(line) for line in result_lines]
-                for json_result in json_results:
-                    url = Url(task_uuid_id=task_uuid, port=json_result.get('port', 'Unknown'), url=json_result.get('url', 'Unknown'), title=json_result.get('title', 'Unknown'), scheme=json_result.get('scheme', 'Unknown'), webserver=json_result.get('webserver', 'Unknown'), content_type=json_result.get('content_type', 'Unknown'), method=json_result.get('method', 'Unknown'), host=json_result.get('host', 'Unknown'), path=json_result.get('path', 'Unknown'), time=json_result.get('time', 'Unknown'), status_code=json_result.get('status_code', 'Unknown'))
-                    url.save()
-        except Exception as e:
-            logger.error("Url Scan Failed: {}".format(e))
+        result = subprocess.run([httpx_path, '-json', '-u', address_port_str, '-fl', '0', '-mc' ,'200,302,403,404,204,303,400,401,405'], stdout=subprocess.PIPE)
+        if result.stdout:
+            # 存入数据库
+            result_lines = result.stdout.decode().splitlines()
+            json_results = [json.loads(line) for line in result_lines]
+            for json_result in json_results:
+                url = Url(task_uuid_id=task_uuid, port=json_result.get('port', 'Unknown'), url=json_result.get('url', 'Unknown'), title=json_result.get('title', 'Unknown'), scheme=json_result.get('scheme', 'Unknown'), webserver=json_result.get('webserver', 'Unknown'), content_type=json_result.get('content_type', 'Unknown'), method=json_result.get('method', 'Unknown'), host=json_result.get('host', 'Unknown'), path=json_result.get('path', 'Unknown'), time=json_result.get('time', 'Unknown'), status_code=json_result.get('status_code', 'Unknown'))
+                url.save()
     except MemoryError as exc:
         raise Reject(exc, requeue=False)
     except OSError as exc:
@@ -291,8 +290,59 @@ def UrlScan(self, task_uuid):
 
     return "Url Scan Complete"
 
-def fingerScan():
-    pass
+
+@app.task(bind=True, name="task.tasks.fingerScan", queue="fingerScan", base=BaseTaskWithRetry)
+def FingerScan(self, task_uuid):
+    logger.info("Executing Finger Scan task id {0.id}".format(self.request))
+    try:
+        random_uuid = uuid.uuid4()
+        # 根据操作系统和架构选择对应的 bin 文件
+        if system == 'Darwin' and arch == 'x86_64':
+            observer_ward_path = os.path.join('utils', 'tools', 'observer_ward_apple-darwin', 'observer_ward')
+        elif system == 'Darwin' and arch == 'arm64':
+            observer_ward_path = os.path.join('utils', 'tools', 'observer_ward_aarch64-apple-darwin', 'observer_ward')
+        else:
+            raise SystemError('Unsupported system or architecture')
+        # Update task status to running
+        self.update_state(state='PROGRESS', meta={'current_task': 'Finger Scan', 'status': 'Running'})
+        url_objects = Url.objects.filter(task_uuid_id=task_uuid)
+        # Create file path
+        if system == 'Darwin' and arch == 'x86_64':
+            file_path = os.path.join('utils', 'tools', 'observer_ward_apple-darwin', f"{random_uuid}.txt")
+            result_path = os.path.join('utils', 'tools', 'observer_ward_apple-darwin', f"{random_uuid}.json")
+        elif system == 'Darwin' and arch == 'arm64':
+            file_path = os.path.join('utils', 'tools', 'observer_ward_aarch64-apple-darwin', f"{random_uuid}.txt")
+            result_path = os.path.join('utils', 'tools', 'observer_ward_aarch64-apple-darwin', f"{random_uuid}.json")
+
+        # Open file in write mode
+        with open(file_path, "w") as file:
+            # Write each API to a new line
+            for obj in url_objects:
+                file.write(f"{obj.url}\n")
+
+        result = subprocess.run([observer_ward_path, '-f', file_path, '-j', result_path], stdout=subprocess.PIPE)
+        if result.stdout:
+            # 存入数据库
+            with open(result_path, 'r') as f:
+                results = json.loads(f.read())
+                for result in results:
+                    url = Finger(task_uuid_id=task_uuid, url=result.get('url', 'Unknown'), name=result.get('name', 'Unknown'), priority=result.get('priority', 0), length=result.get('length', 0), title=result.get('title', 'Unknown'), status_code=result.get('status_code', 0), is_web=result.get('is_web', False))
+                    url.save()
+
+        # 删除临时文件
+        os.remove(file_path)
+        os.remove(result_path)
+    except MemoryError as exc:
+        raise Reject(exc, requeue=False)
+    except OSError as exc:
+        if exc.errno == errno.ENOMEM:
+            raise Reject(exc, requeue=False)
+    except Exception as e:
+        logger.error("Finger Scan Failed: {}".format(e))
+        raise e
+
+    return "Finger Scan Complete"
+
 
 def weakpassScan():
     pass

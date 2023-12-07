@@ -72,3 +72,19 @@ class Url(resultModel):
         verbose_name = "URL信息"
         verbose_name_plural = verbose_name
         ordering = ('-create_datetime',)
+
+class Finger(resultModel):
+    task_uuid = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="任务UUID")
+    url = models.CharField(max_length=128, verbose_name="URL")
+    name = models.JSONField(verbose_name="名称", default=dict)
+    priority = models.IntegerField(verbose_name="优先级", default=0)
+    length = models.IntegerField(verbose_name="长度", default=0)
+    title = models.CharField(max_length=128, verbose_name="标题", default="Unknown")
+    status_code = models.IntegerField(verbose_name="状态码", default=0)
+    is_web = models.BooleanField(verbose_name="是否为Web", default=False)
+
+    class Meta:
+        db_table = "task_finger"
+        verbose_name = "指纹信息"
+        verbose_name_plural = verbose_name
+        ordering = ('-create_datetime',)

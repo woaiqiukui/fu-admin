@@ -23,8 +23,11 @@ test_params = {
         #     "port": "1-10000"
         #   },
         # },
+        # {
+        #    "subtask_type": "UrlScan",
+        # },
         {
-           "subtask_type": "UrlScan",
+            "subtask_type": "FingerScan",
         }
       ]
     }
