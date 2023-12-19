@@ -1,0 +1,232 @@
+version: 4.0
+
+parallel: 30                      # 漏洞探测的 worker 数量，可以简单理解为同时有 30 个 POC 在运行
+
+# 全局 http 发包配置
+# 更多解释见 https://docs.xray.cool/#/configration/http
+http:
+  #proxy: "socks5:" 
+  proxy: ""                             # 漏洞扫描时使用的代理，如: http://127.0.0.1:8080。 如需设置多个代理，请使用 proxy_rule 或自行创建上层代理
+  proxy_rule: []                        # 漏洞扫描使用多个代理的配置规则, 具体请参照文档
+  dial_timeout: 5                       # 建立 tcp 连接的超时时间
+  read_timeout: 10                      # 读取 http 响应的超时时间，不可太小，否则会影响到 sql 时间盲注的判断
+  max_conns_per_host: 50                # 同一 host 最大允许的连接数，可以根据目标主机性能适当增大
+  enable_http2: false                   # 是否启用 http2, 开启可以提升部分网站的速度，但目前不稳定有崩溃的风险
+  fail_retries: 0                       # 请求失败的重试次数，0 则不重试
+  max_redirect: 5                       # 单个请求最大允许的跳转数
+  max_resp_body_size: 2097152           # 最大允许的响应大小, 默认 2M
+  max_qps: 50                          # 每秒最大请求数
+  allow_methods:                        # 允许的请求方法
+  - HEAD
+  - GET
+  - POST
+  - PUT
+  - PATCH
+  - DELETE
+  - OPTIONS
+  - CONNECT
+  - TRACE
+  - MOVE
+  - PROPFIND
+  headers:
+    User-Agent: Mozilla/5.0 (Windows NT 10.0; rv:78.0) Gecko/20100101 Firefox/78.0
+    # Cookie: key=value
+
+# 漏洞探测的插件配置
+# 更多解释见 https://docs.xray.cool/#/configration/plugins
+plugins:
+  baseline:
+    enabled: true
+    detect_cors_header_config: true     # 检查 cors 相关配置
+    detect_server_error_page: true      # 检查服务器错误信息
+    detect_system_path_leak: true       # 检查响应是否包含系统路径泄露
+    detect_outdated_ssl_version: false  # 检查 ssl 版本问题
+    detect_http_header_config: false    # 检查 http 安全相关 header 是否配置
+    detect_cookie_httponly: false       # 检查 set-cookie 时是否设置 http only
+    detect_china_id_card_number: true  # 检查响应是否存在身份证号
+    detect_china_phone_number: true    # 检查响应是否存在电话号码
+    detect_china_bank_card: true       # 检查响应是否存在银行卡号
+    detect_private_ip: true           # 检查响应是否包含内网 ip
+  brute-force:
+    enabled: true
+    username_dictionary: ""             # 自定义用户名字典, 为空将使用内置 TOP10, 配置后将与内置字典**合并**
+    password_dictionary: ""             # 自定义密码字典，为空将使用内置 TOP100, 配置后将与内置字典**合并**
+  cmd-injection:
+    enabled: true
+  crlf-injection:
+    enabled: true
+  dirscan:
+    enabled: true
+    depth: 1                            # 检测深度，定义 http://t.com/a/ 深度为 1, http://t.com/a 深度为 0
+    dictionary: ""                      # 自定义检测字典, 配置后将与内置字典**合并**
+  fastjson:
+    enabled: true
+  jsonp:
+    enabled: true
+  path-traversal:
+    enabled: true
+  phantasm:
+    enabled: true
+    depth: 1
+    exclude_poc: []                     # 排除哪些 poc, 支持 glob 语法, 如: "/home/poc/*thinkphp*" 或 "poc-yaml-weblogic*"
+    include_poc: [
+      "poc/*/*"
+    ]                     # 只使用哪些 poc / 加载本地 poc, 支持 glob 语法, 如："*weblogic*" 或 "/home/poc/*"
+  redirect:
+    enabled: true
+  shiro:
+    enabled: true
+    cookie_name: rememberMe             # 默认使用哪个 shiro cookie name
+    aes_key: ['KPH+BIXK5D2DEZIIXCAAAA==', '2AVVHDSGUS0FSA3SDFADAG==', '3AVVHMFLUS0KTA3KPRSDAG==', '4AVVHMFLUS0KTA3KPRSDAG==', '5AAC5QKM5OQA5PYVAAAAAA==', '6ZMI6I2J5Y+R5ASN5ZOLAA==', 'BWLJCM9ZAAAAAAAAAAAAAA==', 'WGIHPLAMYXLVB11UXWOL8G==', 'Z3VUCWAAAAAAAAAAAAAAAA==', 'MTIZNDU2NZG5MGFIY2RLZG==', 'ZSYK5KP6PZAAJLT+EENMLG==', 'U3BYAW5NQMXHZGUAAAAAAA==', '5AVVHMFLUS0KTA3KPRSDAG==', 'BXDRXL9ENJY2KJA3Z2OTPQ==', 'FCQ+/XW488HMTCD+CMJ3AQ==', '1QWLXG+NYMXRAMOXAXU/IW==', 'ZUDSAGJUSMXIBVI2ZHC9PQ==', 'L7RIOUULEFHRYXM7A2R/YG==', 'R0E3C16IDVKOUZGK1TKVMG==', 'BWLUZS1HC3NLDC1RZXK6QQ==', 'A2VLCE9UR29PBMDBBMRGAQ==', 'WCFHGU25GNNTXTLMJMESPW==', 'ZAVPH3DSQS0FSL3SDFADAG==', 'TIVV6G3UZBGFGSHESAQBJA==', 'CMVTZW1IZXJNZQAAAAAAAA==', 'ZNJLC2H6Y24XMJM0NTY3OA==', 'RVZBTK5JR0HUTFLFV0FPVQ==', 'WKHBTKDYSUFPSEVJX0NBVA==', 'GSHAWO4M1ENBE0KNSMULHG==', 'L8CC6D2XPKT1YFTLICLHCG==', 'KU471RVNQ6K7PQL4SQXGJG==', '0AVVHMFLUS0KTA3KPRSDAG==', '1AVVHDSGUS0FSA3SDFADAG==', '25BSMDYWJNFCWMNHACIDDG==', '3JVYHMBLUS0ETA5KPRSDAG==', '6AVVHMFLUS0KTA3KPRSDAG==', '6NFXKC7YVCV5DASIREM1RG==', '7AVVHMFLUS0KTA3KPRSDAG==', '8AVVHMFLUS0KTA3KPRSDAG==', '8BVVHMFLUS0KTA3KPRSDAG==', '9AVVHMFLUS0KTA3KPRSDAG==', 'OUHYQZXQ/W9E/UJIAGU6RG==', 'A3DVBMCAAAAAAAAAAAAAAA==', 'AU1PCMFJBGVPTWLYYWNSZQ==', 'BXRVBNMAAAAAAAAAAAAAAA==', 'OY//C4RHFWNXCQAQCRQQ1Q==', '5J7BIJIV0LQSN3C9LPITBQ==', 'F/SY5TIVE5WWZT4AQLABJA==', 'BYA2HKYO57U6FWH5THEAWW==', 'WUB+Y2GCHRNY2LG9+AQMQG==', '3QDVDLAWOIR1XFD6IETNWG==', 'YI1+NBV//M7ELRIYDHM6DQ==', '6ZM+6I2J5Y+R5AS+5ZOLAA==', '2A2V+RFLUS+ETA3KPR+DAG==', '6ZMI6I2J3Y+R1ASN5BOLAA==', 'SKZPBMFSQMXHZGUAAAAAAA==', '2CVTIE83C4LIRELJWKGJUW==', 'FSHSPZW/92PRS3XRPW+VXW==', 'XTX6CKLO/SDSGUB+OPHSRW==', 'SHDIJUN6TZHL8XZMG3ULCQ==', 'O4PDF+7E+MZE8NYXMTPJMQ==', 'HWRBLTGVEZC14H9VPMVZWW==', 'RPNQM6UKFCYAL10AK51UKQ==', 'Y1JXNSPXVWMKYVES/KJGEQ==', 'LT2UVDUMQWEWM6MMOIW4IG==', 'MPDCMZ9URZEA50JDLDYYDG==', 'XVMMOLTFPB8TTCEUT5R7BW==', 'C+3HFGPJBGZGDRC+MHGORQ==', 'CLLK69ONCA3M+S0JIMIKPG==', 'BF7MFKNR0AXGGPTOZREBAG==', '1TC/XRDYS8EY+SA3EMTIYW==', 'ZMFSYWRVLNH5EI5ZAGLYBW==', 'CGHYYWNRY3RMREUHFIMKZA==', 'IDUELDUPDDXE677ZKHHKNQ==', 'YEAAO1E8BOEAYFBLM4NG9Q==', 'CGLJYXMAAAAAAAAAAAAAAA==', '2ITFW92XAZYRI5LTW0M2YA==', 'XGGKGQGQYRIX9LI6VXCRRW==', 'ERTVHMFLUS0KTA3KPRSDAG==', '5AVVHMFLUS0ATA4KPRSDAG==', 'S0KTA3MFLUPRK4AVVHSDAG==', 'HBLZKG78AJAZUTE0VLZDDG==', '9FVVHTFLUS0KNA3KPRSDYG==', 'D2VIUMVTZW1IZXJNZUTLEQ==', 'YNEUGSZL/CFIWW1GALG6AG==', 'NGK/3CQ6F5/UNPRH8LPMIG==', '4BVVHMFLUS0KTA3KPRSDAG==', 'MZVESKYYWTI2OFVLZJRZZG==', 'EMPODDEYMWAAAAAAAAAAAA==', 'A7UZJGH1+EWJ5OBFI+MSGW==', 'C2HPCM9FYMF0AXMZMGAAAA==', 'I45FVT72K2KLGVFRJTOZRW==', 'U3BABW5NQMXHZGUAAAAAAA==', 'JT3C93KMR9D5E8QZWFSIMW==', 'MTIZNDU2NZGXMJM0NTY3OA==', 'VXP33AONIP9BFWGL7AT7RA==', 'V2HHDCBUAGUGSGVSBAAAAA==', 'Q01TX0JGTFLLRVLFMJAXOQ==', 'IS9ZJ3PZNH2CGTHB4UA3+Q==', 'NSZXJXVKLWPZWOFKVK6KUA==', 'GAEVYNZNVGNCURAVBHCR1W==', '66V1O8KEKNV3TTCGPK1WZG==', 'SDKOLKN2J1J/2BHJEZWAOQ==', 'KPH+BIXK5D2DEZIIXCABAA==', 'KPH+BIXK5D2DEZIIXCACAA==', '3AVVHDAGUS0FSA4SDFADBG==', '4AVVHDSGUS0F563SDFADAG==', 'FL9HL9YU5BVUJ0PDU1YSVG==', '5RC7UBZLKBYFFFJM22Q/ZW==', 'EXNMAAAAAAAAAAAAAAAAAA==', 'FDCEIK9YVLC668SS43CJ6A==', 'FJOQCIZ0Z5XWZ2N2LYXNWW==', 'HEUZ/LVGKO7NSA18ZYVXWQ==', 'HOTP07FJPKIRLOWOVXMV+Q==', 'IYCGIIYCATQOFD0XXXBZEG==', 'M0/5ZZ9L4JJQXN7MRER/BW==', 'NOIW91X9GSICRLCF03ZGZW==', 'OPH+BIXK5E2ENZIIXCQAAA==', 'QAK0RP8SG0UJC4KE2BAYNA==', 'RB5RN+LOFDWJLZWAWSXZXG==', 'S2SE9Y32PVLEYO+VGFPCKA==', 'SRPFBCVD89ETQ2ICOD0TMG==', 'U0HGX2D1BNMAAAAAAAAAAA==', 'US0KVVHTEASAM43KFLAENG==', 'YMX1ZXDOYWXLAAAAAAAAAA==', 'YWJJZGRJYMFHYMNKZGNIYQ==', 'ZIIHPLAMYXLVB11UXWOL8G==', 'ZJQYMTJINTJHZGZMYJFJMQ==', 'KPV59VYQZJ00X11LXJZTJJ2UHW48JZHN', '2ADSFASDQERQERQEWRADSF==', '2AVVCXSXUS0FSA7SYFJDQG==', '2AVVHDSGERDSSA3SDFADAG==', '2AVVHDSGUS0FSA3SAFADFG==', '2AVVHDSGUS0FSA3SDFADER==', '2AVVHDSGUSOFSA3SDFADAG==', '2AVVHMFLUS0KTA3KPRSDAG==', '2AVVIDSAUSOFSA3SDFADOG==', '3AV2HMFLAS0BTA3KPRSD6E==', '3AVVHDAGUS1FSA4SDFADBG==', '3AVVHMFLIS0KTA3KPRSDAG==', '3AVVHMFLUS0KTA3KATHGFG==', '3QDVDLAWOIR1XFD6IETNSG==', '3RVVHMFLUS0KAT3KPRSDAG==', '4AVVHM2LUS0KTA3KPRSDAG==', '4AVVHMFLUS0KTA3KAAAAAA==', '4AVVHMFLUS0KTA3KPRSEAF==', '4AVVHMFLUS0TTA3KPRSDAG==', '4AVVHMFLUS5KTA1KPRSDAG==', '4AVVHMFLUSOKTA3KPRSDAG==', '4RVVHMFLUS0KAT3KPRSDAG==', '4WCZSJYQDUQSIJE93AQIRG==', '5AVVHCSGUS0FSA3SDFADAG==', '5OIR5PIV5P2H5ZK46BG8IQ==', '8AVVHDSGUS0FSA3SDFADAG==', '9AMI6V2G5Y+R5APNE4OLBB==', '9AVVHNFLUS3KTV8KPRSDAG==', 'A69EC781563B1A5D791F7B2BDD117A36', 'AF05JAUYUEB1OUJQ9Y9PHG==', 'AG91C2VOB3VZZWHVDXNLMG==', 'A+KWR7O9O0/G/W6AOGESRA==', 'AZTIX2RUQHC7DHOZL1MJ8Q==', 'B2EAAAAAAAAAAAAAAAAAAA==', 'B9RPF8FHHXKJZ9K63IK7KQ==', 'C2HVDWTLLXBSDXMUMJAXNG==', 'CJ6LNKZNLEOWAZRDQYH/EW==', 'DUHFIN37X6CHW29JSNE45M==', 'FCQ+/XW488HMTCE+CMJ3FF==', 'FJBNM1AVVGMWE9CY2HQV75==', 'FP7QKJZDJOGKZOQZO2WTMA==', 'GHRF5ZLFQ1DTADD1JLOHHA==', 'GHXH6G3LFH8ZB3NWORGFFA==', 'HOLG7NHB9POTM0N5S4IC0Q==', 'LT181DCQVZ/BO9WB8WS/CG==', 'M2DJA70UBBUPDIBGZBRVRA==', 'MICCZHQT6EBHRZIYW1FAXQ==', 'PBNA+QZEN1VJV3RNQQBLHG==', 'PYYX1C5X2F0LZZ7VKZXJKO==', 'QDFCNFKLUS0KTA3KPRSDAG==', 'QF5HMYZAWDZYRYFNSGHTDQ==', 'QQFTSNNJ/SX7VU51IXAYEQ==', 'QUXQSEFNWVNPRLRCVULMRA==', 'QVN1BM5UJ3MGU3VUC2L0ZQ==', 'R29YZG9UV2VIAAAAAAAAAA==', 'SBV2T3OKBDM3U0R2EVCSZB==', 'SGIQRQUVXA1OZRRIK3HLZW==', 'TGMPE7LGO/GBR38QIJU1/W==', 'UGLZMJAXNIVLEUVLXIEJLW==', 'W793PPQ5ZVBKKJ8OHV4KAQ==', 'WRJUH2TTBPQLNT4JVHRIUG==', 'WYLZMDIFWQ3SW1VHHHPGKA==', 'YNLHDNMAAAAAAAAAAAAAAA==', 'YVD4DMRTVJVIM1ULM0QIDN==', 'YWDLBNRAZG1AMJAXOHN3ZG==', 'YYSTOMRZLMUJIK0Q1+LFDW==', 'Z3VUCWAAAAAAAAAAAAABBB==', 'Z3VUCWACAOVAKALACAADSA==', 'ZGDMDWAAAAAAAAAAAAAAAA', 'ZUDSAGJUSMXIBVI2ZHC9PQ', 'epointxk5D2deZiIxcaaaA==', 'O4pdf+7e+mZe8NyxMTPJmQ==', '0AvVhmFLUs0KTA3Kprsdag==', '1AvVhdsgUs0FSA3SDFAdag==', '1QWLxg+NYmxraMoxAXu/Iw==', '1tC/xrDYs8ey+sa3emtiYw==', '25BsmdYwjnfcWmnhAciDDg==', '2A2V+RFLUs+eTA3Kpr+dag==', '2adsfasdqerqerqewradsf==', '2AvVCXsxUs0FSA7SYFjdQg==', '2AvVhdsgERdsSA3SDFAdag==', '2AvVhdsgUs0FSA3SaFAdfg==', '2AvVhdsgUs0FSA3SDFAdag==', '2AvVhdsgUs0FSA3SDFAder==', '2AvVhdsgUsOFSA3SDFAdag==', '2AvVhmFLUs0KTA3Kprsdag==', '2AvVidsaUSofSA3SDFAdog==', '2cVtiE83c4lIrELJwKGJUw==', '2itfW92XazYRi5ltW0M2yA==', '3Av2hmFLAs0BTA3Kprsd6E==', '3AvVhdAgUs0FSA4SDFAdBg==', '3AvVhdAgUs1FSA4SDFAdBg==', '3AvVhMFLIs0KTA3Kprsdag==', '3AvVhmFLUs0KTA3KaTHGFg==', '3AvVhmFLUs0KTA3Kprsdag ==', '3AvVhmFLUs0KTA3Kprsdag==', '3JvYhmBLUs0ETA5Kprsdag==', '3qDVdLawoIr1xFd6ietnsg==', '3qDVdLawoIr1xFd6ietnwg==', '3rvVhmFLUs0KAT3Kprsdag==', '4AvVhdsgUs0F563SDFAdag==', '4AvVhm2LUs0KTA3Kprsdag==', '4AvVhmFLUs0KTA3KAAAAAA==', '4AvVhmFLUs0KTA3Kprsdag==', '4AvVhmFLUs0KTA3KprSdAg==', '4AvVhmFLUs0KTA3Kprseaf==', '4AvVhmFLUs0TTA3Kprsdag==', '4AvVhmFLUs5KTA1Kprsdag==', '4AvVhmFLUsOKTA3Kprsdag==', '4BvVhmFLUs0KTA3Kprsdag==', '4rvVhmFLUs0KAT3Kprsdag==', '4WCZSJyqdUQsije93aQIRg==', '5aaC5qKm5oqA5pyvAAAAAA==', '5AvVhCsgUs0FSA3SDFAdag==', '5AvVhmFLUS0ATA4Kprsdag==', '5AvVhmFLUs0KTA3Kprsdag==', '5J7bIJIV0LQSN3c9LPitBQ==', '5oiR5piv5p2h5ZK46bG8IQ==', '5RC7uBZLkByfFfJm22q/Zw==', '66v1O8keKNV3TTcGPK1wzg==', '6AvVhmFLUs0KTA3Kprsdag==', '6NfXkC7YVCV5DASIrEm1Rg==', '6Zm+6I2j5Y+R5aS+5ZOlAA==', '6ZmI6I2j3Y+R1aSn5BOlAA==', '6ZmI6I2j5Y+R5aSn5ZOlAA==', '7AvVhmFLUs0KTA3Kprsdag==', '8AvVhdsgUs0FSA3SDFAdag==', '8AvVhmFLUs0KTA3Kprsdag==', '8BvVhmFLUs0KTA3Kprsdag==', '9Ami6v2G5Y+r5aPnE4OlBB==', '9AvVhmFLUs0KTA3Kprsdag==', '9AVvhnFLuS3KTV8KprsdAg==', '9FvVhtFLUs0KnA3Kprsdyg==', 'a2VlcE9uR29pbmdBbmRGaQ==', 'a3dvbmcAAAAAAAAAAAAAAA==', 'a69ec781563b1a5d791f7b2bdd117a36', 'A7UzJgh1+EWj5oBFi+mSgw==', 'AF05JAuyuEB1ouJQ9Y9Phg==', 'aG91c2Vob3VzZWhvdXNlMg==', 'A+kWR7o9O0/G/W6aOGesRA==', 'aU1pcmFjbGVpTWlyYWNsZQ==', 'AztiX2RUqhc7dhOzl1Mj8Q==', 'b2EAAAAAAAAAAAAAAAAAAA==', 'B9rPF8FHhxKJZ9k63ik7kQ==', 'Bf7MfkNR0axGGptozrebag==', 'bWljcm9zAAAAAAAAAAAAAA==', 'bWluZS1hc3NldC1rZXk6QQ==', 'bXdrXl9eNjY2KjA3Z2otPQ==', 'bXRvbnMAAAAAAAAAAAAAAA==', 'bya2HkYo57u6fWh5theAWw==', 'c2hpcm9fYmF0aXMzMgAAAA==', 'c2hvdWtlLXBsdXMuMjAxNg==', 'c+3hFGPjbgzGdrC+MHgoRQ==', 'cGhyYWNrY3RmREUhfiMkZA==', 'cGljYXMAAAAAAAAAAAAAAA==', 'Cj6LnKZNLEowAZrdqyH/Ew==', 'ClLk69oNcA3m+s0jIMIkpg==', 'cmVtZW1iZXJNZQAAAAAAAA==', 'd2ViUmVtZW1iZXJNZUtleQ==', 'duhfin37x6chw29jsne45m==', 'empodDEyMwAAAAAAAAAAAA==', 'ertVhmFLUs0KTA3Kprsdag==', 'eXNmAAAAAAAAAAAAAAAAAA==', 'fcq+/xW488hMTCD+cmJ3aq==', 'fCq+/xW488hMTCD+cmJ3aQ==', 'fCq+/xW488hMTCE+cmJ3FF==', 'fdCEiK9YvLC668sS43CJ6A==', 'FjbNm1avvGmWE9CY2HqV75==', 'FJoQCiz0z5XWz2N2LyxNww==', 'FL9HL9Yu5bVUJ0PDU1ySvg==', 'FP7qKJzdJOGkzoQzo2wTmA==', 'fsHspZw/92PrS3XrPW+vxw==', 'f/SY5TIve5WWzT4aQlABJA==', 'GAevYnznvgNCURavBhCr1w==', 'GhrF5zLfq1Dtadd1jlohhA==', 'GHxH6G3LFh8Zb3NwoRgfFA==', 'GsHaWo4m1eNbE0kNSMULhg==', 'hBlzKg78ajaZuTE0VLzDDg==', 'HeUZ/LvgkO7nsa18ZyVxWQ==', 'HOlg7NHb9potm0n5s4ic0Q==', 'HoTP07fJPKIRLOWoVXmv+Q==', 'HWrBltGvEZc14h9VpMvZWw==', 'i45FVt72K2kLgvFrJtoZRw==', 'IduElDUpDDXE677ZkhhKnQ==', 'Is9zJ3pzNh2cgTHB4ua3+Q==', 'iycgIIyCatQofd0XXxbzEg==', 'Jt3C93kMR9D5e8QzwfsiMw==', 'kPH+bIxk5D2deZiIxcaaaA==', 'kPH+bIxk5D2deZiIxcabaA==', 'kPH+bIxk5D2deZiIxcacaA==', 'kPv59vyqzj00x11LXJZTjJ2UHW48jzHN', 'KU471rVNQ6k7PQL4SqxgJg==', 'L7RioUULEFhRyxM7a2R/Yg==', 'l8cc6d2xpkT1yFtLIcLHCg==', 'lt181dcQVz/Bo9Wb8ws/Cg==', 'lT2UvDUmQwewm6mMoiw4Ig==', 'm0/5ZZ9L4jjQXn7MREr/bw==', 'M2djA70UBBUPDibGZBRvrA==', 'mIccZhQt6EBHrZIyw1FAXQ==', 'MPdCMZ9urzEA50JDlDYYDg==', 'MTIzNDU2Nzg5MGFiY2RlZg==', 'MTIzNDU2NzgxMjM0NTY3OA==', 'MzVeSkYyWTI2OFVLZjRzZg==', 'NGk/3cQ6F5/UNPRh8LpMIg==', 'NoIw91X9GSiCrLCF03ZGZw==', 'NsZXjXVklWPZwOfkvk6kUA==', 'oPH+bIxk5E2enZiIxcqaaA==', 'OUHYQzxQ/W9e/UjiAGu6rg==', 'OY//C4rhfwNxCQAQCrQQ1Q==', 'pbnA+Qzen1vjV3rNqQBLHg==', 'pyyX1c5x2f0LZZ7VKZXjKO==', 'Q01TX0JGTFlLRVlfMjAxOQ==', 'QAk0rp8sG0uJC4Ke2baYNA==', 'QDFCnfkLUs0KTA3Kprsdag==', 'QF5HMyZAWDZYRyFnSGhTdQ==', 'qQFtSnnj/sx7vu51ixAyEQ==', 'QUxQSEFNWVNPRlRCVUlMRA==', 'QVN1bm5uJ3MgU3Vuc2l0ZQ==', 'r0e3c16IdVkouZgk1TKVMg==', 'R29yZG9uV2ViAAAAAAAAAA==', 'Rb5RN+LofDWJlzWAwsXzxg==', 'rPNqM6uKFCyaL10AK51UkQ==', 'RVZBTk5JR0hUTFlfV0FPVQ==', 's0KTA3mFLUprK4AvVhsdag==', 's2SE9y32PvLeYo+VGFpcKA==', 'sBv2t3okbdm3U0r2EVcSzB==', 'SDKOLKn2J1j/2BHjeZwAoQ==', 'sgIQrqUVxa1OZRRIK3hLZw==', 'sHdIjUN6tzhl8xZMG3ULCQ==', 'SkZpbmFsQmxhZGUAAAAAAA==', 'SrpFBcVD89eTQ2icOD0TMg==', 'TGMPe7lGO/Gbr38QiJu1/w==', 'tiVV6g3uZBGfgshesAQbjA==', 'U0hGX2d1bnMAAAAAAAAAAA==', 'U3BAbW5nQmxhZGUAAAAAAA==', 'U3ByaW5nQmxhZGUAAAAAAA==', 'UGlzMjAxNiVLeUVlXiEjLw==', 'Us0KvVhTeasAm43KFLAeng==', 'V2hhdCBUaGUgSGVsbAAAAA==', 'vXP33AonIp9bFwGl7aT7rA==', 'w793pPq5ZVBKkj8OhV4KaQ==', 'WcfHGU25gNnTxTlmJMeSpw==', 'wGiHplamyXlVB11UXWol8g==', 'WkhBTkdYSUFPSEVJX0NBVA==', 'wrjUh2ttBPQLnT4JVhriug==', 'WuB+y2gcHRnY2Lg9+Aqmqg==', 'wyLZMDifwq3sW1vhhHpgKA==', 'XgGkgqGqYrix9lI6vxcrRw==', 'XTx6CKLo/SdSgub+OPHSrw==', 'xVmmoltfpb8tTceuT5R7Bw==', 'Y1JxNSPXVwMkyvES/kJGeQ==', 'yeAAo1E8BOeAYfBlm4NG9Q==', 'YI1+nBV//m7ELrIyDHm6DQ==', 'Ymx1ZXdoYWxlAAAAAAAAAA==', 'yNeUgSzL/CfiWw1GALg6Ag==', 'YnlhdnMAAAAAAAAAAAAAAA==', 'YVd4dmRtVjViM1UlM0QIdn==', 'YWdlbnRAZG1AMjAxOHN3Zg==', 'YWJjZGRjYmFhYmNkZGNiYQ==', 'YystomRZLMUjiK0Q1+LFdw==', 'Z3VucwAAAAAAAAAAAAAAAA==', 'Z3VucwAAAAAAAAAAAAABBB==', 'Z3VucwACAOVAKALACAADSA==', 'ZAvph3dsQs0FSL3SDFAdag==', 'ZGdmdwAAAAAAAAAAAAAAAA', 'zIiHplamyXlVB11UXWol8g==', 'ZjQyMTJiNTJhZGZmYjFjMQ==', 'ZmFsYWRvLnh5ei5zaGlybw==', 'ZnJlc2h6Y24xMjM0NTY3OA==', 'zSyK5Kp6PZAAjlT+eeNMlg==', 'ZUdsaGJuSmxibVI2ZHc9PQ=']                         # 自定义 shiro key，配置后将与内置 100 key 做合并
+  sqldet:
+    enabled: true
+    boolean_based_detection: true       # 是否检测布尔盲注
+    error_based_detection: true         # 是否检测报错注入
+    time_based_detection: true          # 是否检测时间盲注
+    use_comment_in_payload: false       # 在 payload 中使用 or, 慎用！可能导致删库！
+    detect_sqli_in_cookie: true         # 是否检查在 cookie 中的注入
+  ssrf:
+    enabled: true
+  struts:
+    enabled: true
+  thinkphp:
+    enabled: true
+    detect_thinkphp_sqli: true          # 检查 thinkphp 特定语法的 sqli 注入漏洞
+  upload:
+    enabled: true
+  xss:
+    enabled: true
+    detect_xss_in_cookie: true          # 是否探测入口点在 cookie 中的 xss
+    ie_feature: false                   # 是否扫描仅能在 ie 下利用的 xss
+  xxe:
+    enabled: true
+
+# 反连平台配置，更多解释见 https://docs.xray.cool/#/configration/reverse
+# 注意: 默认配置为禁用反连平台，这是无法扫描出依赖反连平台的漏洞，这些漏洞包括 fastjson，ssrf 以及 poc 中依赖反连的情况等
+reverse:
+  db_file_path: "db.db"                      # 反连平台数据库文件位置, 这是一个 KV 数据库
+  token: "YTYaZzuO"                             # 反连平台认证的 Token, 独立部署时不能为空
+  http:
+    enabled: false
+    listen_ip: 0.0.0.0 
+    listen_port: "50020"
+    ip_header: ""                       # 在哪个 http header 中取 ip，为空代表从 REMOTE_ADDR 中取
+  dns:
+    enabled: false
+    listen_ip: 0.0.0.0 
+    domain: "360s0so.com"                          # DNS 域名配置
+    is_domain_name_server: true        # 是否修改了域名的 ns 为反连平台，如果是，那 nslookup 等就不需要指定 dns 了
+    resolve:                            # DNS 静态解析规则
+    - type: A                           # A, AAAA, TXT 三种
+      record: ns1
+      value: 121.5.227.133
+      ttl: 60
+    - type: A                           # A, AAAA, TXT 三种
+      record: ns2
+      value: 121.5.227.133
+      ttl: 60
+  client:
+    remote_server: true                # 是否是独立的远程 server，如果是要在下面配置好远程的服务端地址
+    http_base_url: "http://223.4.73.58:12345"                   # 默认将根据 ListenIP 和 ListenPort 生成，该地址是存在漏洞的目标反连回来的地址, 当反连平台前面有反代、绑定域名、端口映射时需要自行配置
+    dns_server_ip: ""                   # 和 http_base_url 类似，实际用来访问 dns 服务器的地址
+
+
+# 被动代理配置
+# 更多解释见 https://docs.xray.cool/#/configration/mitm
+mitm:
+  ca_cert: ./ca.crt                     # CA 根证书路径
+  ca_key: ./ca.key                      # CA 私钥路径
+  basic_auth:                           # 基础认证的用户名密码
+    username: ""
+    password: ""
+  allow_ip_range: []                    # 允许的 ip，可以是 ip 或者 cidr 字符串
+  restriction:                          # 代理能够访问的资源限制, 以下各项为空表示不限制
+    hostname_allowed: []                # 允许访问的 Hostname，支持格式如 t.com、*.t.com、1.1.1.1、1.1.1.1/24、1.1-4.1.1-8
+    hostname_disallowed:                # 不允许访问的 Hostname，支持格式如 t.com、*.t.com、1.1.1.1、1.1.1.1/24、1.1-4.1.1-8
+    - '*google*'
+    - '*github*'
+    - '*chaitin*'
+    - '*.xray.cool'
+    port_allowed: []                    # 允许访问的端口, 支持的格式如: 80、80-85
+    port_disallowed: []                 # 不允许访问的端口, 支持的格式如: 80、80-85
+    path_allowed: []                    # 允许访问的路径，支持的格式如: test、*test*
+    path_disallowed: []                 # 不允许访问的路径, 支持的格式如: test、*test*
+    query_key_allowed: []               # 允许访问的 Query Key，支持的格式如: test、*test*
+    query_key_disallowed: []            # 不允许访问的 Query Key, 支持的格式如: test、*test*
+    fragment_allowed: []                # 允许访问的 Fragment, 支持的格式如: test、*test*
+    fragment_disallowed: []             # 不允许访问的 Fragment, 支持的格式如: test、*test*
+    post_key_allowed: []                # 允许访问的 Post Body 中的参数, 支持的格式如: test、*test*
+    post_key_disallowed: []             # 不允许访问的 Post Body 中的参数, 支持的格式如: test、*test*
+  queue:
+    max_length: 2000                    # 队列长度限制, 也可以理解为最大允许多少等待扫描的请求, 请根据内存大小自行调整
+  proxy_header:
+    via: ""                             # 是否为代理自动添加 Via 头
+    x_forwarded: false                  # 是否为代理自动添加 X-Forwarded-{For,Host,Proto,Url} 四个 http 头
+  upstream_proxy: ""                    # 为 mitm 本身配置独立的代理
+
+# 基础爬虫配置
+# 更多解释见 https://docs.xray.cool/#/configration/basic-crawler
+basic-crawler:
+  max_depth: 0                          # 最大爬取深度， 0 为无限制
+  max_count_of_links: 0                 # 本次爬取收集的最大链接数, 0 为无限制
+  allow_visit_parent_path: false        # 是否允许爬取父目录, 如果扫描目标为 t.com/a/且该项为 false, 那么就不会爬取 t.com/ 这级的内容
+  restriction:                          # 爬虫的允许爬取的资源限制, 为空表示不限制。爬虫会自动添加扫描目标到 Hostname_allowed。
+    hostname_allowed: []                # 允许访问的 Hostname，支持格式如 t.com、*.t.com、1.1.1.1、1.1.1.1/24、1.1-4.1.1-8
+    hostname_disallowed:                # 不允许访问的 Hostname，支持格式如 t.com、*.t.com、1.1.1.1、1.1.1.1/24、1.1-4.1.1-8
+    - '*google*'
+    - '*github*'
+    - '*chaitin*'
+    - '*.xray.cool'
+    port_allowed: []                    # 允许访问的端口, 支持的格式如: 80、80-85
+    port_disallowed: []                 # 不允许访问的端口, 支持的格式如: 80、80-85
+    path_allowed: []                    # 允许访问的路径，支持的格式如: test、*test*
+    path_disallowed: []                 # 不允许访问的路径, 支持的格式如: test、*test*
+    query_key_allowed: []               # 允许访问的 Query Key，支持的格式如: test、*test*
+    query_key_disallowed: []            # 不允许访问的 Query Key, 支持的格式如: test、*test*
+    fragment_allowed: []                # 允许访问的 Fragment, 支持的格式如: test、*test*
+    fragment_disallowed: []             # 不允许访问的 Fragment, 支持的格式如: test、*test*
+    post_key_allowed: []                # 允许访问的 Post Body 中的参数, 支持的格式如: test、*test*
+    post_key_disallowed: []             # 不允许访问的 Post Body 中的参数, 支持的格式如: test、*test*
+  basic_auth:                           # 基础认证信息
+    username: ""
+    password: ""
+
+# 子域名扫描配置，配置解释见 https://docs.xray.cool/#/configration/subdomain
+# 注意：该功能仅限高级版用户使用
+subdomain:
+  max_parallel: 30                      # 子域名探测的并发度
+  allow_recursion: false                # 是否允许递归探测, 开启后，扫描完一级域名后，会自动将一级的每个域名作为新的目标
+  max_recursion_depth: 3                # 最大允许的递归深度, 3 表示 3 级子域名 仅当 allow_recursion 开启时才有意义
+  web_only: false                       # 结果中仅显示有 web 应用的, 没有 web 应用的将被丢弃
+  ip_only: false                        # 结果中仅展示解析出 IP 的，没有解析成功的将被丢弃
+  servers:                              # 子域名扫描过程中使用的 DNS Server
+  - 8.8.8.8
+  - 8.8.4.4
+  - 223.5.5.5
+  - 223.6.6.6
+  - 114.114.114.114
+  sources:
+    brute:
+      enabled: true
+      main_dict: ""                     # 一级大字典路径，为空将使用内置的 TOP 30000 字典
+      sub_dict: ""                      # 其他级小字典路径，为空将使用内置过的 TOP 100 字典
+    httpfinder:
+      enabled: true                     # 使用 http 的一些方式来抓取子域名，包括 js, 配置文件，http header 等等
+    dnsfinder:
+      enabled: true                     # 使用 dns 的一些错误配置来找寻子域名，如区域传送（zone transfer)
+    certspotter:                        # 下面的通过 api 获取的了
+      enabled: true
+    crt:
+      enabled: true
+    hackertarget:
+      enabled: true
+    qianxun:
+      enabled: true
+    rapiddns:
+      enabled: true
+    sublist3r:
+      enabled: true
+    threatminer:
+      enabled: true
+    virusTotal:
+      enabled: true

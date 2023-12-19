@@ -1,0 +1,16 @@
+name: poc-yaml-landray-file-upload
+transport: http
+rules:
+  r0:
+    request:
+      method: GET
+      path: /sys/attachment/sys_att_main/jg_service.jsp
+      follow_redirects: false
+    expression: >-
+      response.status == 200 &&
+      "DBSTEP\\s+[v|V]3.0\\s+\\d+\\s+\\d+(.*)".bmatches(response.body)
+expression: r0()
+detail:
+  author: 小r
+  links:
+    - https://www.landray.com.cn/?sorce=baidupinzhuanwy

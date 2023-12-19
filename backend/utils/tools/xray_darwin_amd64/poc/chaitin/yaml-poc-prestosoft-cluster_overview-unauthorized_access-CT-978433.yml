@@ -1,0 +1,25 @@
+name: poc-yaml-cluster-overview-unauthorized
+manual: true
+transport: http
+rules:
+  r0:
+    request:
+      cache: true
+      method: GET
+      path: /application.wadl
+      follow_redirects: false
+    expression: response.status == 200 && response.body_string.startsWith("<?xml") && response.body_string.contains("/v1/info") && response.body_string.contains("/v1/statement")
+
+  r1:
+    request:
+      cache: true
+      method: GET
+      path: /v1/query
+      follow_redirects: false
+    expression: response.status == 200 && response.body_string.startsWith("[{") && response.body_string.contains("\"session\":{") && response.body_string.contains("\"transactionId\"")
+expression: r0() || r1()
+
+detail:
+  author: EASY
+  links:
+    - https://docs.oracle.com/cd/E35822_01/server.740/es_admin/src/cadm_cluster_about.html

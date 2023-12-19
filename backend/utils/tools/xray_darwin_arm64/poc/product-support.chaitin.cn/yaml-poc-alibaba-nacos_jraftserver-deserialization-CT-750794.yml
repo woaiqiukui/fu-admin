@@ -1,0 +1,15 @@
+name: poc-yaml-nacos-jraft-hessian-deser
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /nacos/v1/console/server/state
+        expression: response.status == 200 && (response.body_string.contains("\"version\":\"2") && "\"version\":\"(?P<version>[0-9\\.]+)\"".submatch(response.body_string)["version"].versionLess("2.2.3") || response.body_string.contains("\"version\":\"1") && "\"version\":\"(?P<version>[0-9\\.]+)\"".submatch(response.body_string)["version"].versionLess("1.4.6")) && ("\"standalone_mode\":\"(?P<mode>[a-zA-Z]+)\"".submatch(response.body_string)["mode"] == "cluster" || "\"standalone_mode\":\"(?P<mode>[a-zA-Z]+)\"".submatch(response.body_string)["mode"] == "standalone" && "\"version\":\"(?P<version>[0-9\\.]+)\"".submatch(response.body_string)["version"].versionGreater("2"))
+expression: r0()
+detail:
+    author: chaitin
+    links:
+        - https://stack.chaitin.com/techblog/detail?id=106

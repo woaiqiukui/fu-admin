@@ -1,0 +1,22 @@
+name: poc-yaml-huatian-oa8000-buffalo-rce
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /OAapp/bfapp/buffalo/
+            follow_redirects: false
+        expression: response.status == 500 && response.body_string.contains("Buffalo worker support POST only!") && response.body_string.contains("net.buffalo.service.BuffaloWorker.validate")
+    r1:
+        request:
+            cache: true
+            method: POST
+            path: /OAapp/bfapp/buffalo/
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            follow_redirects: false
+        expression: response.status == 500 && response.body_string.contains("net.buffalo.service.NoSuchServiceException:") && response.body_string.contains("net.buffalo.service.BuffaloWorker.processRequest")
+expression: r0() || r1()
+detail: {}

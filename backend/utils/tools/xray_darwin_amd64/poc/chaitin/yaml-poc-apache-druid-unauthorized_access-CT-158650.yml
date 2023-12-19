@@ -1,0 +1,11 @@
+name: poc-yaml-apahce-druid-console-unauth
+transport: http
+rules:
+  r0:
+    request:
+      cache: true
+      method: GET
+      path: /status
+      follow_redirects: false
+    expression: response.status == 200 && response.body_string.contains('"name":"org.apache.druid') && response.body_string.contains('"artifact":"druid') && response.body_string.contains("maxMemory")
+expression: r0()

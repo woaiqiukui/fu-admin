@@ -1,0 +1,13 @@
+name: poc-yaml-weaver-ecology-oa-plugin-checkserver-setting-sqli
+manual: true
+transport: http
+rules:
+  r0:
+    request:
+      method: GET
+      path: /mobile/plugin/CheckServer.jsp?type=mobileSetting
+    expression: |-
+      response.status == 200 && response.body_string.contains('"error":"system error"') && !response.headers["errorMsg"].contains("securityIntercept")
+expression: r0()
+detail:
+  author: chaitin

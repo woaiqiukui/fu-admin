@@ -55,6 +55,21 @@ class TaskManager:
     #     }
     #   ]
     # }
+        
+    def create_crontab_task_group(self):
+        for param in self.task_params['params']:
+            subtask_type = param['subtask_type']
+            if subtask_type == 'CrontabTest':
+                logger.info("CrontabTest")
+                from datetime import timedelta
+                app.conf.beat_schedule = {
+                    'crontab_test': {
+                        'task': 'task.tasks.crontabTest',
+                        'schedule': timedelta(seconds=10),
+                        'args': (),
+                    },
+                }
+                return 'SUCCESS'
 
     def create_subtask_group(self):
         for param in self.task_params['params']:
@@ -347,6 +362,59 @@ def FingerScan(self, task_uuid):
 def weakpassScan():
     pass
 
-def pocScan():
+
+@app.task(bind=True, name="task.tasks.pocScan", queue="pocScan", base=BaseTaskWithRetry)
+def pocScan(self, task_uuid):
+    logger.info("Executing POC Scan task id {0.id}".format(self.request))
+    try:
+        # 根据操作系统和架构选择对应的 bin 文件
+        if system == 'Darwin' and arch == 'x86_64':
+            nuclei_path = os.path.join('utils', 'tools', 'nuclei_macOS_amd64', 'nuclei')
+            xray_path = os.path.join('utils', 'tools', 'xray_darwin_amd64', 'xray_darwin_amd64')
+            xpoc_path = os.path.join('utils', 'tools', 'xpoc_darwin_amd64', 'xpoc_darwin_amd64')
+        elif system == 'Darwin' and arch == 'arm64':
+            nuclei_path = os.path.join('utils', 'tools', 'nuclei_macOS_arm64', 'nuclei')
+            xray_path = os.path.join('utils', 'tools', 'xray_darwin_arm64', 'xray_darwin_arm64')
+            xpoc_path = os.path.join('utils', 'tools', 'xpoc_darwin_arm64', 'xpoc_darwin_arm64')
+        else:
+            raise SystemError('Unsupported system or architecture')
+        # Update task status to running
+        self.update_state(state='PROGRESS', meta={'current_task': 'Poc Scan', 'status': 'Running'})
+        url_objects = Url.objects.filter(task_uuid_id=task_uuid)
+        tmp_url_path = os.path.join('utils', 'tools', 'tmp_url.txt')
+        with open(tmp_url_path, 'w') as f:
+            for obj in url_objects:
+                f.write(f"{obj.url}\n")
+        # nuclei    
+
+    except MemoryError as exc:
+        raise Reject(exc, requeue=False)
+    except OSError as exc:
+        if exc.errno == errno.ENOMEM:
+            raise Reject(exc, requeue=False)
+    except Exception as e:
+        logger.error("Finger Scan Failed: {}".format(e))
+        raise e
+
+    return "PocScan Complete"
+
+@app.task(bind=True, name="task.tasks.nucleiScan", queue="Vuln", base=BaseTaskWithRetry)
+def nucleiScan(self, nuclei_path, tmp_url_path):
+    logger.info("Executing Nuclei Scan task id {0.id}".format(self.request))
+    self.update_state(state='PROGRESS', meta={'current_task': 'Nuclei Scan', 'status': 'Running'})
+    result = subprocess.run([nuclei_path, '-l', tmp_url_path, '-nss', '-rdb', 'utils/tools/nuclei_result.db', '-duc'], stdout=subprocess.PIPE)
+
+
+@app.task(bind=True, name="task.tasks.xrayScan", queue="Vuln", base=BaseTaskWithRetry)
+def xrayScan():
     pass
 
+@app.task(bind=True, name="task.tasks.xpocScan", queue="Vuln", base=BaseTaskWithRetry)
+def xpocScan():
+    pass
+
+
+@app.task(bind=True, name="task.tasks.crontabTest", queue="crontabTest")
+def crontab_test(self):
+    logger.info("Executing crontab test task id {0.id}".format(self.request))
+    return "crontab_test"
