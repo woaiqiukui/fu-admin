@@ -88,3 +88,51 @@ class Finger(resultModel):
         verbose_name = "指纹信息"
         verbose_name_plural = verbose_name
         ordering = ('-create_datetime',)
+
+
+class Nuclei(resultModel):
+    task_uuid = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="任务UUID")
+    template = models.CharField(max_length=128, verbose_name="模板")
+    template_url = models.CharField(max_length=128, verbose_name="模板URL")
+    template_id = models.CharField(max_length=128, verbose_name="模板ID")
+    template_path = models.CharField(max_length=128, verbose_name="模板路径")
+    template_encoded = models.TextField(verbose_name="模板编码")
+    name = models.CharField(max_length=128, verbose_name="名称")
+    author = models.CharField(max_length=128, verbose_name="作者", null=True)
+    tags = models.CharField(max_length=128, verbose_name="标签", null=True)
+    severity = models.CharField(max_length=128, verbose_name="严重程度")
+    type = models.CharField(max_length=128, verbose_name="类型")
+    host = models.CharField(max_length=128, verbose_name="主机")
+    port = models.CharField(max_length=128, verbose_name="端口")
+    scheme = models.CharField(max_length=128, verbose_name="协议")
+    url = models.CharField(max_length=128, verbose_name="URL")
+    matched_at = models.TextField(verbose_name="匹配特征")
+    request = models.TextField(verbose_name="请求")
+    response = models.TextField(verbose_name="响应")
+    ip = models.CharField(max_length=128, verbose_name="IP")
+    timestamp = models.CharField(max_length=128, verbose_name="时间戳")
+    curl_command = models.TextField(verbose_name="CURL命令")
+    matcher_status = models.BooleanField(verbose_name="匹配状态")
+
+    class Meta:
+        db_table = "task_poc_nuclei"
+        verbose_name = "Nuclei扫描信息"
+        verbose_name_plural = verbose_name
+        ordering = ('-create_datetime',)
+
+
+class Xray(resultModel):
+    task_uuid = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="任务UUID")
+    create_time = models.BigIntegerField(verbose_name="创建时间")
+    addr = models.CharField(max_length=256, verbose_name="地址")
+    payload = models.CharField(max_length=256, verbose_name="负载")
+    snapshot = models.JSONField(verbose_name="快照")
+    extra = models.JSONField(verbose_name="额外信息")
+    plugin = models.CharField(max_length=128, verbose_name="插件")
+    url = models.CharField(max_length=256, verbose_name="目标URL")
+
+    class Meta:
+        db_table = "task_poc_xray"
+        verbose_name = "Xray扫描信息"
+        verbose_name_plural = verbose_name
+        ordering = ('-create_time',)

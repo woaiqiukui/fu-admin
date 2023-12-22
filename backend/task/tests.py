@@ -8,7 +8,7 @@ logger = get_task_logger(__name__)
 # Create your tests here.
 test_params = {
       "task_uuid": "0f32536057ce4d34acb629db7ebaeb1f",
-      "if_crontab": True,
+      "if_crontab": False,
       "params": [
         # {
         #   "subtask_type": "SubdomainScan",
@@ -32,44 +32,24 @@ test_params = {
         # {
         #     "subtask_type": "WeakPasswordScan",
         # },
-        # {
-        #     "subtask_type": "PocScan",
-        #     "subparams": {
-        #         nuclei_level: ["info", "low", "medium", "high", "critical", "unknown"],
-        #     }
-        # },
         {
-            "subtask_type": "CrontabTest",
-        }
+            "subtask_type": "PocScan",
+            "subparams": {
+                "nuclei_level": ["critical"],
+                "concurrent_templates": "50",
+                "bulk_size": "50",
+                "rate_limit": "300",
+            }
+        },
       ]
     }
 
 test_uuid = uuid.uuid4()
 
 class TaskManagerTest(TestCase):
-
-
-    def test_portScan(self):
-        logger.debug("test_portScan")
+    def test_pocScan(self):
         self.task = TaskManager(test_uuid, test_params)
-        if test_params["if_crontab"]:
-          from django_celery_beat.models import CrontabSchedule, PeriodicTask
-          crontab = CrontabSchedule.objects.create(
-            minute="*/1",
-            hour="*",
-            day_of_week="*",
-            day_of_month="*",
-            month_of_year="*"
-          )
-          task = PeriodicTask.objects.create(
-            crontab=crontab,
-            name="test",
-            task="task.tasks.crontabTest",
-            args="[]",
-            kwargs="{}"
-          )
-        else:
-          if self.task.create_subtask_group():
+        if self.task.create_subtask_group():
             result = self.task.subtask_result.get()
         self.assertEqual(result, None)
 

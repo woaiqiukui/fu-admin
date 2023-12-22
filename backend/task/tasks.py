@@ -3,13 +3,13 @@ import uuid
 import json
 from fuadmin.celery import app
 import subprocess
-from .models import Port, Task, Url, Finger
+from .models import Port, Task, Url, Finger, Nuclei, Xray
 from enum import Enum
 import errno
 from celery.exceptions import Reject, Ignore
 from celery.utils.log import get_task_logger
 from celery.worker.request import Request
-from celery import group, states
+from celery import group, states, chord
 from celery import Task as CeleryTask
 import xml.etree.ElementTree as ET
 
@@ -36,41 +36,6 @@ class TaskManager:
         self.task_list = []
         self.subtask_result = None
 
-    ### task_params 格式
-    # {
-    #   "task_uuid": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
-    #   "if_crontab": False,
-    #   "params": [
-    #     {
-    #       "subtask_type": "subdomainScan",
-    #       "subparams": {
-    #         "target": "www.baidu.com\nwww.google.com"
-    #       }
-    #     },
-    #     {
-    #       "subtask_type": "portScan",
-    #       "subparams": {
-    #         "target": "www.baidu.com\nwww.google.com"
-    #       }
-    #     }
-    #   ]
-    # }
-        
-    def create_crontab_task_group(self):
-        for param in self.task_params['params']:
-            subtask_type = param['subtask_type']
-            if subtask_type == 'CrontabTest':
-                logger.info("CrontabTest")
-                from datetime import timedelta
-                app.conf.beat_schedule = {
-                    'crontab_test': {
-                        'task': 'task.tasks.crontabTest',
-                        'schedule': timedelta(seconds=10),
-                        'args': (),
-                    },
-                }
-                return 'SUCCESS'
-
     def create_subtask_group(self):
         for param in self.task_params['params']:
             subtask_type = param['subtask_type']
@@ -85,6 +50,9 @@ class TaskManager:
                 self.task_list.append(UrlScan.s(self.task_params['task_uuid']))
             elif subtask_type == 'FingerScan':
                 self.task_list.append(FingerScan.s(self.task_params['task_uuid']))
+            elif subtask_type == 'PocScan':
+                logger.info("PocScan")
+                self.task_list.append(PocScan.s(self.task_params['task_uuid'], subparams))
 
         job = group(*self.task_list)
         self.subtask_result = job.apply_async()
@@ -155,6 +123,11 @@ class BaseTaskWithRetry(CeleryTask):
     retry_backoff_max = 700
     retry_jitter = False
 
+# 清理任务
+@app.task
+def cleanUpFile(file_path):
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
 @app.task(bind=True, name="task.tasks.subdomainScan", queue="subdomainScan")
 def SubdomainScan(self, params, task_uuid):
@@ -198,22 +171,6 @@ def QuakeScan():
     pass
 
 
-
-
-# portScan params
-# test_params = {
-#       "task_uuid": "0f32536057ce4d34acb629db7ebaeb1f",
-#       "if_crontab": False,
-#       "params": [
-#         {
-#           "subtask_type": "portScan",
-#           "subparams": {
-#             "target": "127.0.0.1\n47.100.82.223",
-#             "port": "1-10000"
-#           },
-#         }
-#       ]
-#     }
 @app.task(bind=True, name="task.tasks.portScan", queue="portScan", base=BaseTaskWithRetry)
 def PortScan(self, target, port, task_uuid):
     logger.info("Executing Port Scan task id {0.id}".format(self.request))
@@ -359,12 +316,12 @@ def FingerScan(self, task_uuid):
     return "Finger Scan Complete"
 
 
-def weakpassScan():
+def WeakPassScan():
     pass
 
 
 @app.task(bind=True, name="task.tasks.pocScan", queue="pocScan", base=BaseTaskWithRetry)
-def pocScan(self, task_uuid):
+def PocScan(self, task_uuid, subparams):
     logger.info("Executing POC Scan task id {0.id}".format(self.request))
     try:
         # 根据操作系统和架构选择对应的 bin 文件
@@ -381,11 +338,24 @@ def pocScan(self, task_uuid):
         # Update task status to running
         self.update_state(state='PROGRESS', meta={'current_task': 'Poc Scan', 'status': 'Running'})
         url_objects = Url.objects.filter(task_uuid_id=task_uuid)
-        tmp_url_path = os.path.join('utils', 'tools', 'tmp_url.txt')
+        random_uuid = uuid.uuid4()
+        tmp_url_path = os.path.join('utils', 'tools', f'{random_uuid}_tmp_url.txt')
         with open(tmp_url_path, 'w') as f:
             for obj in url_objects:
                 f.write(f"{obj.url}\n")
-        # nuclei    
+        scan_group = group([
+                nucleiScan.s(task_uuid, nuclei_path, tmp_url_path, subparams['nuclei_level'], subparams['concurrent_templates'], subparams['bulk_size'], subparams['rate_limit']),
+                xrayScan.s(task_uuid, xray_path, f'../{random_uuid}_tmp_url.txt'),
+                # xpocScan.s(task_uuid, xpoc_path, f'../{random_uuid}_tmp_url.txt')
+                ])
+        # 创建清理任务
+        cleanup_task = cleanUpFile.s(tmp_url_path)
+        
+        # 使用 chord 将扫描任务组和清理任务链接起来
+        workflow = chord(scan_group)(cleanup_task)
+        
+        # 可以存储 workflow 的 id，以便以后查询状态
+        workflow_id = workflow.id
 
     except MemoryError as exc:
         raise Reject(exc, requeue=False)
@@ -393,28 +363,76 @@ def pocScan(self, task_uuid):
         if exc.errno == errno.ENOMEM:
             raise Reject(exc, requeue=False)
     except Exception as e:
-        logger.error("Finger Scan Failed: {}".format(e))
+        logger.error("Poc Scan Failed: {}".format(e))
+        # 如果在启动工作流程之前发生异常，确保删除临时文件
+        if os.path.exists(tmp_url_path):
+            os.remove(tmp_url_path)
         raise e
 
     return "PocScan Complete"
 
 @app.task(bind=True, name="task.tasks.nucleiScan", queue="Vuln", base=BaseTaskWithRetry)
-def nucleiScan(self, nuclei_path, tmp_url_path):
+def nucleiScan(self, task_uuid, nuclei_path, tmp_url_path, nuclei_level, concurrent_templates, bulk_size, rate_limit):
     logger.info("Executing Nuclei Scan task id {0.id}".format(self.request))
     self.update_state(state='PROGRESS', meta={'current_task': 'Nuclei Scan', 'status': 'Running'})
-    result = subprocess.run([nuclei_path, '-l', tmp_url_path, '-nss', '-rdb', 'utils/tools/nuclei_result.db', '-duc'], stdout=subprocess.PIPE)
-
+    random_uuid = uuid.uuid4()
+    try: 
+        logger.info("Nuclei Scan: {}".format(nuclei_path))
+        result = subprocess.run([nuclei_path, '-l', tmp_url_path, '-nss', '-je', f'utils/tools/{random_uuid}.json', '-duc', '-severity', ','.join(nuclei_level), '-retries', '1', '-project', '-c', concurrent_templates, '-bulk-size', bulk_size, '-rate-limit', rate_limit], stdout=subprocess.PIPE)
+        json_result_file = f'utils/tools/{random_uuid}.json'
+        if result.stdout:
+            # 存入数据库
+            with open(json_result_file, 'r') as f:
+                results = json.loads(f.read())
+                for result in results:
+                    nuclei = Nuclei(task_uuid_id=task_uuid, template=result.get('template', 'Unknown'), template_url=result.get('template-url', 'Unknown'), template_id=result.get('template-id', 'Unknown'), template_path=result.get('template-path', 'Unknown'), template_encoded=result.get('template-encoded', 'Unknown'), name=result['info'].get('name', 'Unknown'), author=result['info'].get('author', 'Unknown'), tags=result['info'].get('tags', 'Unknown'), severity=result['info'].get('severity', 'Unknown'), type=result.get('type', 'Unknown'), host=result.get('host', 'Unknown'), port=result.get('port', 'Unknown'), scheme=result.get('scheme', 'Unknown'), url=result.get('url', 'Unknown'), matched_at=result.get('matched-at', 'Unknown'), request=result.get('request', 'Unknown'), response=result.get('response', 'Unknown'), ip=result.get('ip', 'Unknown'), timestamp=result.get('timestamp', 'Unknown'), curl_command=result.get('curl-command', 'Unknown'), matcher_status=result.get('matcher-status', 'Unknown'))
+                    nuclei.save()
+            # 删除临时文件
+            os.remove(json_result_file)
+    except MemoryError as exc:
+        raise Reject(exc, requeue=False)
+    except OSError as exc:
+        if exc.errno == errno.ENOMEM:
+            raise Reject(exc, requeue=False)
+    except Exception as e:
+        logger.error("Nuclei Scan Failed: {}".format(e))
+        raise e
+    
+    return "Nuclei Scan Complete"
 
 @app.task(bind=True, name="task.tasks.xrayScan", queue="Vuln", base=BaseTaskWithRetry)
-def xrayScan():
-    pass
+def xrayScan(self, task_uuid, xray_path, tmp_url_path):
+    logger.info("Executing Xray Scan task id {0.id}".format(self.request))
+    self.update_state(state='PROGRESS', meta={'current_task': 'Xray Scan', 'status': 'Running'})
+    random_uuid = uuid.uuid4()
+    try:
+        logger.info("Xray Scan: {}".format(xray_path))
+        # 使用subprocess.run的cwd参数来设置工作目录
+        result = subprocess.run(
+            [os.path.join('.', os.path.basename(xray_path)), 'ws', '--uf', tmp_url_path, '--json-output', f'../{random_uuid}.json'],
+            stdout=subprocess.PIPE,
+            cwd=os.path.dirname(xray_path)  # 设置工作目录为xray的目录
+        )
+        logger.info("Xray Scan Result: {}".format(result))
+        json_result_file = f'utils/tools/{random_uuid}.json'
+        if result.stdout:
+            # 存入数据库
+            with open(json_result_file, 'r') as f:
+                results = json.loads(f.read())
+                for result in results:
+                    xray = Xray(task_uuid_id=task_uuid, create_time=result.get('create_time', 'Unknown'), addr=result['detail'].get('addr', 'Unknown'), payload=result['detail'].get('payload', 'Unknown'), snapshot=result['detail'].get('snapshot', 'Unknown'), extra=result['detail'].get('extra', 'Unknown'), plugin=result.get('plugin', 'Unknown'), url=result['target'].get('url', 'Unknown'))
+                    xray.save()
+            # 删除临时文件
+            os.remove(json_result_file)
+    except MemoryError as exc:
+        raise Reject(exc, requeue=False)
+    except OSError as exc:
+        if exc.errno == errno.ENOMEM:
+            raise Reject(exc, requeue=False)
+    except Exception as e:
+        logger.error("Nuclei Scan Failed: {}".format(e))
+        raise e
+    
+    return "Xray Scan Complete"
 
-@app.task(bind=True, name="task.tasks.xpocScan", queue="Vuln", base=BaseTaskWithRetry)
-def xpocScan():
-    pass
 
-
-@app.task(bind=True, name="task.tasks.crontabTest", queue="crontabTest")
-def crontab_test(self):
-    logger.info("Executing crontab test task id {0.id}".format(self.request))
-    return "crontab_test"
