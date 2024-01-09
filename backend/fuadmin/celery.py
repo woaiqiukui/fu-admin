@@ -6,9 +6,19 @@ from django.conf import settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', "fuadmin.settings")
 
 # app = Celery(f"application")
-app = Celery(f"system")
+app = Celery(f"fuadmin")
 
 app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
-app.autodiscover_tasks(['task'])
+# app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)
+app.conf.update(
+    include=[
+            'task.tasks.company',
+            'task.tasks.domain',
+            'task.tasks.finger',
+            'task.tasks.mail',
+            'task.tasks.poc',
+            'task.tasks.port',
+            'task.tasks.url',
+            ]
+)
 platforms.C_FORCE_ROOT = True

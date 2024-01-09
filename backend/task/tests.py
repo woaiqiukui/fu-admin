@@ -32,15 +32,21 @@ test_params = {
         # {
         #     "subtask_type": "WeakPasswordScan",
         # },
+        # {
+        #     "subtask_type": "PocScan",
+        #     "subparams": {
+        #         "nuclei_level": ["critical"],
+        #         "concurrent_templates": "50",
+        #         "bulk_size": "50",
+        #         "rate_limit": "300",
+        #     }
+        # },
         {
-            "subtask_type": "PocScan",
+            "subtask_type": "MailScan",
             "subparams": {
-                "nuclei_level": ["critical"],
-                "concurrent_templates": "50",
-                "bulk_size": "50",
-                "rate_limit": "300",
+                "domains": "www.dbappsecurity.com.cn\nwww.cztv.com",
             }
-        },
+        }
       ]
     }
 
@@ -52,8 +58,3 @@ class TaskManagerTest(TestCase):
         if self.task.create_subtask_group():
             result = self.task.subtask_result.get()
         self.assertEqual(result, None)
-
-
-
-
-        

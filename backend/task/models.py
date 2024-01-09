@@ -136,3 +136,8 @@ class Xray(resultModel):
         verbose_name = "Xray扫描信息"
         verbose_name_plural = verbose_name
         ordering = ('-create_time',)
+
+
+class Mail(resultModel):
+    task_uuid = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="任务UUID")
+    
