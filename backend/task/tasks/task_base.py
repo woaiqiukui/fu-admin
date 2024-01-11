@@ -1,13 +1,16 @@
 from celery.worker.request import Request
 from celery import Task as CeleryTask
 from fuadmin.celery import app
-import os,platform
+import os,platform,redis
 from celery.utils.log import get_task_logger
+from fuadmin.settings import CELERY_CACHE
 
 logger = get_task_logger(__name__)
 # 检测当前的操作系统和架构
 system = platform.system()
 arch = platform.machine()
+# redis缓存
+redis_cache = redis.StrictRedis.from_url(CELERY_CACHE)
 
 class MyRequest(Request):
     'A minimal custom request to log failures and hard time limits.'

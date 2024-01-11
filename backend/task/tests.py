@@ -1,6 +1,6 @@
 from django.test import TestCase
 from celery.utils.log import get_task_logger
-from .tasks import TaskManager
+from .task_route import TaskManager
 import uuid
 
 logger = get_task_logger(__name__)
@@ -44,7 +44,7 @@ test_params = {
         {
             "subtask_type": "MailScan",
             "subparams": {
-                "domains": "www.dbappsecurity.com.cn\nwww.cztv.com",
+                "domains": "dbappsecurity.com.cn\ncztv.com",
             }
         }
       ]
