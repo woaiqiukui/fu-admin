@@ -1,7 +1,6 @@
 from django.test import TestCase
 from celery.utils.log import get_task_logger
 from .task_route import TaskManager
-import uuid
 
 logger = get_task_logger(__name__)
 
@@ -41,20 +40,24 @@ test_params = {
         #         "rate_limit": "300",
         #     }
         # },
+        # {
+        #     "subtask_type": "MailScan",
+        #     "subparams": {
+        #         "domains": "dbappsecurity.com.cn\ncztv.com",
+        #     }
+        # },
         {
-            "subtask_type": "MailScan",
+            "subtask_type": "PersonScan",
             "subparams": {
-                "domains": "dbappsecurity.com.cn\ncztv.com",
+                "title": "新蓝网"
             }
         }
       ]
     }
 
-test_uuid = uuid.uuid4()
-
 class TaskManagerTest(TestCase):
     def test_pocScan(self):
-        self.task = TaskManager(test_uuid, test_params)
+        self.task = TaskManager(test_params)
         if self.task.create_subtask_group():
             result = self.task.subtask_result.get()
         self.assertEqual(result, None)

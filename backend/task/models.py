@@ -140,4 +140,23 @@ class Xray(resultModel):
 
 class Mail(resultModel):
     task_uuid = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="任务UUID")
-    
+    domain = models.CharField(max_length=128, verbose_name="域名")
+    email = models.CharField(max_length=128, verbose_name="邮箱")
+
+    class Meta:
+        db_table = "task_mail"
+        verbose_name = "邮箱信息"
+        verbose_name_plural = verbose_name
+        ordering = ('-create_datetime',)
+
+
+class Person(resultModel):
+    task_uuid = models.ForeignKey(Task, on_delete=models.CASCADE, verbose_name="任务UUID")
+    title = models.CharField(max_length=128, verbose_name="搜索关键字")
+    contact = models.JSONField(verbose_name="人员")
+
+    class Meta:
+        db_table = "task_person"
+        verbose_name = "人员信息"
+        verbose_name_plural = verbose_name
+        ordering = ('-create_datetime',)

@@ -16,6 +16,7 @@ app.conf.update(
             'task.tasks.domain',
             'task.tasks.finger',
             'task.tasks.mail',
+            'task.tasks.person',
             'task.tasks.poc',
             'task.tasks.port',
             'task.tasks.url',

@@ -1,6 +1,7 @@
 from celery import group
 from .tasks.finger import FingerScan
 from .tasks.mail import MailScan
+from .tasks.person import PersonScan
 from .tasks.poc import PocScan
 from .tasks.port import PortScan
 from .tasks.url import UrlScan
@@ -9,8 +10,8 @@ from celery.utils.log import get_task_logger
 logger = get_task_logger(__name__)
 
 class TaskManager:
-    def __init__(self, task_uuid, task_params):
-        self.task_uuid = task_uuid
+    def __init__(self, task_params):
+        self.task_uuid = task_params['task_uuid']
         self.task_params = task_params
         self.task_list = []
         self.subtask_result = None
@@ -18,6 +19,7 @@ class TaskManager:
             # 公网任务
             # 'COMPANY_SCAN': lambda subparams: CompanyScan.s(self.task_uuid, subparams),
             'MailScan': lambda subparams: MailScan.s(self.task_uuid, subparams),
+            'PersonScan': lambda subparams: PersonScan.s(self.task_uuid, subparams),
             # 'SubdomainScan': lambda subparams: SubdomainScan.s(subparams, self.task_uuid),
             # 'CdnScan': lambda subparams: CdnScan.s(self.task_uuid, subparams),
 
